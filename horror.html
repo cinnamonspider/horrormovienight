@@ -464,6 +464,41 @@
   .marathon-total-label { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--horror-mauve); text-transform: uppercase; }
   .marathon-total-value { font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 700; color: var(--horror-cream); }
   .marathon-target-note { font-size: 0.85rem; color: var(--horror-mauve); font-style: italic; width: 100%; }
+
+  /* KEYWORD CHIPS */
+  .keyword-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.6rem; }
+  .keyword-chip {
+    font-size: 0.72rem; font-family: 'Crimson Text', serif;
+    background: rgba(150, 2, 0, 0.15); border: 1px solid rgba(150, 2, 0, 0.3);
+    color: var(--horror-cream); padding: 0.15rem 0.5rem; border-radius: 2px;
+  }
+  .keyword-more {
+    font-size: 0.72rem; font-family: 'Crimson Text', serif; font-style: italic;
+    color: var(--horror-mauve); cursor: default; padding: 0.15rem 0.3rem;
+    position: relative;
+  }
+  .keyword-more-popup {
+    position: absolute; bottom: calc(100% + 6px); left: 0;
+    background: #1a0a0a; border: 1px solid rgba(150,2,0,0.4);
+    padding: 0.5rem; z-index: 100; min-width: 200px; max-width: 320px;
+    flex-wrap: wrap; gap: 0.3rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    display: flex;
+  }
+  .keyword-more:hover .keyword-more-popup {
+    opacity: 1; pointer-events: auto;
+  }
+
+  /* KEYWORD FILTER CHIPS */
+  .kw-filter-chip {
+    font-size: 0.75rem; font-family: 'Crimson Text', serif;
+    background: rgba(150, 2, 0, 0.12); border: 1px solid rgba(150, 2, 0, 0.3);
+    color: var(--horror-cream); padding: 0.2rem 0.55rem; border-radius: 2px;
+    cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  }
+  .kw-filter-chip.selected {
+    background: rgba(150, 2, 0, 0.5); border-color: rgba(150, 2, 0, 0.8);
+  }
 </style>
 </head>
 <body>
@@ -576,6 +611,12 @@
         </label>
       </div>
 
+      <div class="marathon-section" id="marathon-keyword-section" style="display:none">
+        <span class="marathon-section-label">Filter by Keyword <em style="font-family:'Crimson Text',serif;font-style:italic;text-transform:none;letter-spacing:0;font-size:0.85rem;color:rgba(159,107,160,0.6)">(optional — any match)</em></span>
+        <div id="marathon-keyword-chips" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;"></div>
+        <div id="marathon-keyword-pool-note" style="font-size:0.78rem;color:var(--horror-mauve);font-style:italic;margin-top:0.5rem;"></div>
+      </div>
+
       <div class="marathon-section">
         <span class="marathon-section-label">Feature Mode</span>
         <div class="marathon-radio-row">
@@ -613,48 +654,93 @@
 
 <script>
 /* =====================================================
-   MOVIE LIST
+   MOVIE DATA (populated by CSV fetch)
    ===================================================== */
-var ALIEN_MOVIES = [
-  { id: "ALN001", name: "Alien",                runtime: 117, year: 1979, director: "Ridley Scott",                                                                                     language: "English", heart: true,  summary: "A commercial crew aboard the deep space towing vessel Nostromo is awakened from their cryo-sleep to investigate a distress call from an alien world." },
-  { id: "ALN002", name: "The Thing",            runtime: 109, year: 1982, director: "John Carpenter",                                                                                   language: "English", heart: true,  summary: "A research team in Antarctica is hunted by a shape-shifting alien that assumes the appearance of its victims." },
-  { id: "ALN003", name: "Annihilation",         runtime: 115, year: 2018, director: "Alex Garland",                                                                                     language: "English", heart: true,  summary: "A biologist signs up for a dangerous secret expedition into a mysterious zone where the laws of nature do not apply." },
-  { id: "ALN004", name: "V/H/S/Beyond",         runtime: 114, year: 2024, director: "Jay Cheel, Jordan Downey, Christian Long, Justin Long, Justin Martinez, Virat Pal, Kate Siegel",  language: "English", heart: false, summary: "An anthology of six frightening encounters caught on video camera, where other-worldly creatures invade and terrorise humans." },
-  { id: "ALN005", name: "Sputnik",              runtime: 113, year: 2020, director: "Egor Abramenko",                                                                                   language: "Russian", heart: false, summary: "Summoned to a secluded research facility at the height of the Cold War, a controversial young doctor examines a cosmonaut who may not have returned to Earth alone." },
-  { id: "ALN006", name: "Dark Skies",           runtime:  97, year: 2013, director: "Scott Stewart",                                                                                    language: "English", heart: false, summary: "As the Barrett family's peaceful suburban life is rocked by an escalating series of disturbing events, they come to learn that a terrifying and deadly force is after them, one which may have arrived from beyond the stars." },
-  { id: "ALN007", name: "Fire in the Sky",      runtime: 109, year: 1993, director: "Robert Lieberman",                                                                                 language: "English", heart: false, summary: "An Arizona logger mysteriously disappears for five days in an alleged encounter with a flying saucer in 1975. His co-workers endure ridicule and contempt as they are wrongly accused of murder." },
-  { id: "ALN008", name: "The Phoenix Tapes '97",runtime:  67, year: 2016, director: "Turner Clay",                                                                                      language: "English", heart: false, summary: "During the Phoenix Lights in 1997, four campers go missing and are never found." },
-  { id: "ALN009", name: "Phoenix Forgotten",    runtime:  87, year: 2017, director: "Justin Barber",                                                                                    language: "English", heart: false, summary: "Two decades after three teenagers disappeared in the wake of mysterious lights appearing above Phoenix, Arizona, unseen footage from that night has been discovered, chronicling the final hours of their fateful expedition." },
-  { id: "ALN010", name: "Aliens: Zone of Silence", runtime: 79, year: 2017, director: "Andy Fowler",                                                                                   language: "English", heart: false, summary: "After Morgan's brother Hal vanishes from the Mexican desert, Morgan sets out to uncover the truth about his disappearance. When she discovers an extraterrestrial presence, she must risk her life to expose the desert's otherworldly secret." },
-  { id: "ALN011", name: "Ick",                  runtime:  93, year: 2024, director: "Joseph Kahn",                                                                                      language: "English", heart: false, summary: "An unlucky high school science teacher, a sarcastic student, and her mother must deal with a parasitic alien entity known as \"The Ick\" that is encroaching upon their small town." },
-  { id: "ALN012", name: "Psycho Goreman",       runtime:  95, year: 2020, director: "Steven Kostanski",                                                                                 language: "English", heart: false, summary: "After unearthing a gem that controls an evil monster looking to destroy the Universe, a young girl and her brother use it to make him do their bidding." },
-  { id: "ALN013", name: "No One Will Save You", runtime:  93, year: 2023, director: "Brian Duffield",                                                                                   language: "English", heart: false, summary: "Brynn finds solace within the walls of the home where she grew up until she's awakened one night by strange noises from unearthly intruders." },
-  { id: "ALN014", name: "Event Horizon",        runtime:  96, year: 1997, director: "Paul W.S. Anderson",                                                                               language: "English", heart: false, summary: "In 2047, a rescue crew is sent to investigate the long-lost starship Event Horizon, which has mysteriously reappeared after vanishing seven years earlier — and something sinister has taken over its corridors." },
-  { id: "ALN015", name: "Nope",                 runtime: 130, year: 2022, director: "Jordan Peele",                                                                                     language: "English", heart: true,  summary: "In the remote California desert, a brother and sister who wrangle horses for Hollywood productions discover that a mysterious presence lurking in the skies above their ranch is responsible for a series of disturbing disappearances." },
-  { id: "ALN016", name: "Pitch Black",          runtime: 109, year: 2000, director: "David Twohy",                                                                                      language: "English", heart: false, summary: "When a transport ship crash-lands on a barren planet, the survivors soon discover that escaped convict Riddick isn't the only danger — deadly creatures hunt in the dark, and the planet is about to plunge into total eclipse." }
-];
+var ALIEN_MOVIES = [];
+var ALIEN_THUMBNAILS = {};
 
 /* =====================================================
-   THUMBNAILS
+   CSV PARSER
    ===================================================== */
-var ALIEN_THUMBNAILS = {
-  "ALN001": "ALN001.jpeg",
-  "ALN002": "ALN002.jpeg",
-  "ALN003": "ALN003.jpeg",
-  "ALN004": "ALN004.jpeg",
-  "ALN005": "ALN005.jpeg",
-  "ALN006": "ALN006.jpeg",
-  "ALN007": "ALN007.jpeg",
-  "ALN008": "ALN008.jpeg",
-  "ALN009": "ALN009.jpeg",
-  "ALN010": "ALN010.jpeg",
-  "ALN011": "ALN011.jpeg",
-  "ALN012": "ALN012.jpeg",
-  "ALN013": "ALN013.jpeg",
-  "ALN014": "ALN014.jpeg",
-  "ALN015": "ALN015.jpeg",
-  "ALN016": "ALN016.jpeg"
-};
+function parseCSVRaw(text) {
+  var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  var headers = parseCSVLine(lines[0]);
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var line = lines[i];
+    if (!line.trim()) continue;
+    var vals = parseCSVLine(line);
+    var obj = {};
+    for (var j = 0; j < headers.length; j++) {
+      obj[headers[j]] = vals[j] !== undefined ? vals[j] : '';
+    }
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function parseCSVLine(line) {
+  var fields = [];
+  var i = 0;
+  while (i < line.length) {
+    if (line[i] === '"') {
+      // Quoted field
+      i++; // skip opening quote
+      var val = '';
+      while (i < line.length) {
+        if (line[i] === '"') {
+          if (line[i + 1] === '"') {
+            val += '"';
+            i += 2;
+          } else {
+            i++; // skip closing quote
+            break;
+          }
+        } else {
+          val += line[i];
+          i++;
+        }
+      }
+      fields.push(val);
+      if (line[i] === ',') i++; // skip comma
+    } else {
+      // Unquoted field
+      var start = i;
+      while (i < line.length && line[i] !== ',') i++;
+      fields.push(line.slice(start, i));
+      if (line[i] === ',') i++; // skip comma
+    }
+  }
+  return fields;
+}
+
+function mapLanguage(code) {
+  if (code === 'en') return 'English';
+  if (code === 'ru') return 'Russian';
+  return code;
+}
+
+function parseCSV(text) {
+  var raw = parseCSVRaw(text);
+  return raw.map(function(r) {
+    return {
+      id:          r['id'],
+      name:        r['name'],
+      runtime:     parseInt(r['runtime_min']) || 0,
+      year:        parseInt(r['release_year']) || 0,
+      director:    r['director'],
+      language:    mapLanguage(r['original_language']),
+      heart:       r['heart'] === 'Y',
+      overview:    r['overview'],
+      tagline:     r['tagline'],
+      genres:      r['genres'],
+      cast_top5:   r['cast_top5'],
+      tmdb_rating: parseFloat(r['tmdb_rating']) || 0,
+      keywords:    r['keywords'] ? r['keywords'].split(', ').filter(function(k) { return k; }) : [],
+      poster_file: r['poster_file']
+    };
+  });
+}
 
 var THEMES = [
   { id: "alien",    gif: "assets/placidplace-ufo-21287_128.gif",  name: "They're Already Here", desc: "Aliens, and not the friendly kind.",                screen: "alien" },
@@ -699,6 +785,71 @@ function attachHoverSound(card, audio) {
     audio.pause();
     audio.currentTime = 0;
   });
+}
+
+/* ---- KEYWORD CHIPS RENDERER ---- */
+function renderKeywords(keywords) {
+  if (!keywords || !keywords.length) return "";
+  var visible = keywords.slice(0, 5);
+  var hidden = keywords.slice(5);
+  var html = '<div class="keyword-chips">';
+  visible.forEach(function(k) {
+    html += '<span class="keyword-chip">' + k + '</span>';
+  });
+  if (hidden.length) {
+    html += '<span class="keyword-more">+ ' + hidden.length + ' more';
+    html += '<span class="keyword-more-popup">';
+    hidden.forEach(function(k) {
+      html += '<span class="keyword-chip">' + k + '</span>';
+    });
+    html += '</span></span>';
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ---- KEYWORD FILTER ---- */
+function buildKeywordFilter() {
+  var allKeywords = {};
+  ALIEN_MOVIES.forEach(function(m) {
+    (m.keywords || []).forEach(function(k) { allKeywords[k] = true; });
+  });
+  var sorted = Object.keys(allKeywords).sort();
+  var container = document.getElementById('marathon-keyword-chips');
+  container.innerHTML = '';
+  sorted.forEach(function(kw) {
+    var span = document.createElement('span');
+    span.className = 'kw-filter-chip';
+    span.textContent = kw;
+    span.addEventListener('click', function() {
+      span.classList.toggle('selected');
+      updateKeywordPoolNote();
+    });
+    container.appendChild(span);
+  });
+  if (sorted.length > 0) {
+    document.getElementById('marathon-keyword-section').style.display = '';
+  }
+}
+
+function getSelectedKeywords() {
+  var chips = document.querySelectorAll('#marathon-keyword-chips .kw-filter-chip.selected');
+  var keys = [];
+  chips.forEach(function(c) { keys.push(c.textContent); });
+  return keys;
+}
+
+function updateKeywordPoolNote() {
+  var selected = getSelectedKeywords();
+  var note = document.getElementById('marathon-keyword-pool-note');
+  if (!selected.length) {
+    note.textContent = '';
+    return;
+  }
+  var count = ALIEN_MOVIES.filter(function(m) {
+    return (m.keywords || []).some(function(k) { return selected.indexOf(k) !== -1; });
+  }).length;
+  note.textContent = count + ' movie' + (count !== 1 ? 's' : '') + ' match';
 }
 
 /* ---- THEME GRID ---- */
@@ -901,7 +1052,10 @@ async function rollMovie() {
         '<div class="movie-text">' +
           '<div class="movie-title">' + pick.name + "</div>" +
           (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
-          (pick.summary ? '<div class="movie-summary">' + pick.summary + "</div>" : "") +
+          (pick.tagline ? '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + pick.tagline + "</div>" : "") +
+          (pick.overview ? '<div class="movie-summary">' + pick.overview + "</div>" : "") +
+          (pick.cast_top5 ? '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (pick.tmdb_rating ? pick.tmdb_rating.toFixed(1) + ' · ' : '') + pick.cast_top5 + "</div>" : "") +
+          renderKeywords(pick.keywords) +
         "</div>" +
       "</div>" +
       '<button class="lock-btn" onclick="lockIn()">✦ We\'re watching this one ✦</button>' +
@@ -924,6 +1078,12 @@ function buildMarathonPool() {
   var pool = [];
   if (document.getElementById("marathon-theme-alien").checked) {
     pool = pool.concat(ALIEN_MOVIES);
+  }
+  var selectedKeywords = getSelectedKeywords();
+  if (selectedKeywords.length > 0) {
+    pool = pool.filter(function(m) {
+      return (m.keywords || []).some(function(k) { return selectedKeywords.indexOf(k) !== -1; });
+    });
   }
   return pool;
 }
@@ -1021,7 +1181,10 @@ function renderMarathonResults() {
     html += '<div class="movie-text">';
     html += '<div class="movie-title">' + m.name + "</div>";
     if (meta) html += '<div class="movie-meta">' + meta + "</div>";
-    if (m.summary) html += '<div class="movie-summary">' + m.summary + "</div>";
+    if (m.tagline) html += '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + m.tagline + "</div>";
+    if (m.overview) html += '<div class="movie-summary">' + m.overview + "</div>";
+    if (m.cast_top5) html += '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (m.tmdb_rating ? m.tmdb_rating.toFixed(1) + ' · ' : '') + m.cast_top5 + "</div>";
+    html += renderKeywords(m.keywords);
     html += "</div></div>";
     html += "</div>";
   });
@@ -1056,7 +1219,26 @@ function renderMarathonResults() {
   results.innerHTML = html;
 }
 
-buildThemeGrid();
+(function init() {
+  fetch('./movies_enriched.csv')
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      var movies = parseCSV(text);
+      ALIEN_MOVIES = [];
+      ALIEN_THUMBNAILS = {};
+      movies.forEach(function(m) {
+        if (m.id && m.id.startsWith('ALN')) {
+          ALIEN_MOVIES.push(m);
+          ALIEN_THUMBNAILS[m.id] = m.poster_file;
+        }
+      });
+      buildThemeGrid();
+      buildKeywordFilter();
+    })
+    .catch(function(err) {
+      document.body.innerHTML = '<div style="color:red;padding:2rem;font-family:monospace">Failed to load movie data: ' + err.message + '</div>';
+    });
+})();
 </script>
 </body>
 </html>
