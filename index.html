@@ -19,11 +19,27 @@
 
   body {
     font-family: 'Crimson Text', Georgia, serif;
-    background: var(--bg);
+    background: #000;
     color: var(--cream);
     min-height: 100vh;
     overflow: hidden;
   }
+
+  /* FILM STRIP BACKGROUND */
+  #bg-film {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 580px;
+    max-width: 95vw;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1s ease 0.3s;
+  }
+  #bg-film.visible { opacity: 1; }
+  #bg-film img { width: 100%; display: block; }
 
   /* INTRO OVERLAY */
   #intro-overlay {
@@ -70,6 +86,8 @@
     padding: 2rem;
     opacity: 0;
     transition: opacity 0.8s ease;
+    position: relative;
+    z-index: 1;
   }
   #selector.visible { opacity: 1; }
 
@@ -246,20 +264,31 @@
   </div>
 </div>
 
+<div id="bg-film"><img src="assets/prawny-film-25972.gif" alt=""></div>
+
 <audio id="audio-horror-hover" src="music/fadingembersaudio-spooky-cartoon-ghost-wooo-430234.mp3"></audio>
 <audio id="audio-comedy-hover" src="music/artificiallyinspired-90s-sitcom-laugh-track-353985.mp3"></audio>
+<audio id="audio-static" src="music/dragon-studio-radio-static-323621.mp3" loop></audio>
 
 <script>
-  var overlay   = document.getElementById("intro-overlay");
-  var selector  = document.getElementById("selector");
+  var overlay    = document.getElementById("intro-overlay");
+  var selector   = document.getElementById("selector");
+  var bgFilm     = document.getElementById("bg-film");
+  var staticAudio = document.getElementById("audio-static");
+  staticAudio.volume = 0.18;
 
+  var introDismissed = false;
   function dismissIntro() {
+    if (introDismissed) return;
+    introDismissed = true;
     overlay.style.opacity = "0";
     setTimeout(function() {
       overlay.style.display = "none";
       document.body.style.overflow = "";
     }, 1000);
     selector.classList.add("visible");
+    bgFilm.classList.add("visible");
+    staticAudio.play().catch(function() {});
   }
 
   overlay.addEventListener("click", dismissIntro);
