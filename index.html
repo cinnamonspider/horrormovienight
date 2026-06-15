@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Night</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --horror-bg: #1E1E24;
+    --horror-red: #960200;
+    --horror-cream: #FBFEF9;
+    --horror-mauve: #9F6BA0;
+    --alien-bg: #0a1a0a;
+    --alien-green-bright: #39ff5a;
+    --alien-green-mid: #236E20;
+    --alien-green-muted: #2e5c2b;
+    --alien-cream: #e8f5e8;
+  }
+
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--horror-bg);
+    color: var(--horror-cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* EYES OVERLAY */
+  #eyes-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: #000; transition: opacity 1.2s ease;
+  }
+  #eyes-overlay img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* SELECTION SCREEN */
+  #screen-select {
+    background: var(--horror-bg);
+    align-items: center; justify-content: center;
+    text-align: center; position: relative;
+  }
+  .horror-drip {
+    position: absolute; top: 0; left: 0;
+    width: 100%; pointer-events: none; z-index: 1; line-height: 0;
+  }
+  .horror-drip img { width: 100%; height: auto; display: block; }
+  .select-inner {
+    max-width: 560px; width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem; position: relative; z-index: 2;
+  }
+  .eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.75rem;
+    letter-spacing: 0.25em; color: var(--horror-mauve);
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .select-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900;
+    color: var(--horror-cream); line-height: 1.1; margin-bottom: 0.5rem;
+  }
+  .select-subtitle {
+    font-size: 1.15rem; color: var(--horror-mauve);
+    font-style: italic; margin-bottom: 3rem;
+  }
+  .theme-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; width: 100%; margin-bottom: 2rem; }
+  .theme-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(150, 2, 0, 0.3); border-radius: 4px;
+    padding: 1.5rem 1.75rem; cursor: pointer; text-align: left;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex; align-items: center; gap: 1.25rem;
+    position: relative; overflow: hidden;
+  }
+  .theme-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--horror-red); opacity: 0; transition: opacity 0.2s;
+  }
+  .theme-card:hover { background: rgba(150, 2, 0, 0.12); border-color: rgba(150, 2, 0, 0.6); }
+  .theme-card:hover::before { opacity: 1; }
+  .theme-gif {
+    width: auto;
+    height: 100%;
+    max-height: 80px;
+    object-fit: contain;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    align-self: stretch;
+  }
+  .theme-card:hover .theme-gif { opacity: 1; }
+  .theme-name { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--horror-cream); margin-bottom: 0.2rem; }
+  .theme-desc { font-size: 0.9rem; color: var(--horror-mauve); font-style: italic; }
+  .theme-arrow { margin-left: auto; color: var(--horror-red); font-size: 1.25rem; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+  .theme-card:hover .theme-arrow { opacity: 1; }
+  .divider { border: none; border-top: 1px solid rgba(150, 2, 0, 0.2); margin: 2rem 0; width: 100%; }
+  .footer-note { font-size: 0.8rem; color: rgba(251, 254, 249, 0.3); font-style: italic; }
+
+  /* SHARED INNER HEADER */
+  .inner-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(57, 255, 90, 0.15);
+    display: flex; align-items: center; gap: 1rem;
+    background: rgba(0,0,0,0.3); flex-shrink: 0;
+  }
+  .back-btn {
+    background: none; border: 1px solid rgba(57, 255, 90, 0.3);
+    color: var(--alien-green-bright); font-family: 'Cinzel', serif;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    padding: 0.4rem 0.85rem; cursor: pointer; border-radius: 2px;
+    text-transform: uppercase; transition: background 0.2s, border-color 0.2s;
+  }
+  .back-btn:hover { background: rgba(57, 255, 90, 0.08); border-color: rgba(57, 255, 90, 0.6); }
+  .inner-header-title {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.3em; color: rgba(57, 255, 90, 0.3);
+    text-transform: uppercase; margin-left: auto;
+  }
+
+  /* ALIEN SCREEN */
+  #screen-alien { background: var(--alien-bg); position: relative; }
+  .alien-main {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; text-align: center;
+  }
+  .alien-critters {
+    display: flex; justify-content: center; gap: 1rem;
+    pointer-events: none; margin-bottom: 1.5rem;
+  }
+  .alien-critters img { width: 96px; height: auto; display: block; }
+  .alien-eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.7rem;
+    letter-spacing: 0.3em; color: var(--alien-green-mid);
+    text-transform: uppercase; margin-bottom: 0.75rem;
+  }
+  .alien-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 900;
+    color: var(--alien-green-bright); line-height: 1; margin-bottom: 0.5rem;
+    letter-spacing: 0.05em; text-shadow: 0 0 40px rgba(57,255,90,0.25);
+  }
+  .alien-subtitle { font-size: 1rem; color: var(--alien-green-muted); font-style: italic; margin-bottom: 2rem; }
+
+  /* FINAL GIRL MODE */
+  .final-girl-toggle {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 2rem; cursor: pointer;
+  }
+  .final-girl-toggle input[type="checkbox"] {
+    accent-color: var(--horror-red);
+    width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;
+  }
+  .final-girl-label {
+    font-family: 'Cinzel', serif; font-size: 0.72rem;
+    letter-spacing: 0.12em; color: var(--horror-mauve);
+    text-transform: uppercase; user-select: none;
+  }
+
+  .roll-btn {
+    background: none; border: 1px solid var(--alien-green-mid);
+    color: var(--alien-green-bright); font-family: 'Cinzel', serif;
+    font-size: 0.85rem; letter-spacing: 0.2em;
+    padding: 1rem 2.5rem; cursor: pointer; text-transform: uppercase;
+    border-radius: 2px; transition: background 0.2s, border-color 0.2s; margin-bottom: 3rem;
+  }
+  .roll-btn:hover { background: rgba(57, 255, 90, 0.07); border-color: var(--alien-green-bright); }
+  .roll-btn:active { transform: scale(0.98); }
+  .roll-btn:disabled {
+    opacity: 0.3; cursor: not-allowed; border-color: rgba(57,255,90,0.1);
+    color: rgba(57,255,90,0.3);
+  }
+
+  .result-area {
+    width: 100%; max-width: 580px; min-height: 220px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .result-empty { color: rgba(57, 255, 90, 0.2); font-style: italic; font-size: 0.95rem; }
+
+  .movie-card {
+    width: 100%; background: rgba(35, 110, 32, 0.07);
+    border: 1px solid rgba(57, 255, 90, 0.2); border-radius: 4px;
+    padding: 2rem; text-align: left;
+    animation: fadeIn 0.4s ease; position: relative; overflow: hidden;
+  }
+  .movie-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 1px; background: var(--alien-green-bright); opacity: 0.4;
+  }
+  .movie-card-inner { display: flex; gap: 1.5rem; align-items: flex-start; }
+  .movie-thumb {
+    width: 90px; flex-shrink: 0; border-radius: 2px;
+    border: 1px solid rgba(57, 255, 90, 0.15);
+    object-fit: cover; aspect-ratio: 2/3; background: rgba(35,110,32,0.1);
+  }
+  .movie-thumb-missing {
+    width: 90px; flex-shrink: 0; aspect-ratio: 2/3;
+    border: 1px dashed rgba(57,255,90,0.1); border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(57,255,90,0.15); font-size: 1.5rem;
+  }
+  .movie-text { flex: 1; min-width: 0; }
+  .movie-id {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.2em; color: var(--alien-green-mid);
+    text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .movie-title {
+    font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 700;
+    color: var(--alien-green-bright); margin-bottom: 0.35rem; line-height: 1.2;
+  }
+  .movie-meta { font-size: 0.85rem; color: var(--alien-green-muted); margin-bottom: 1rem; font-style: italic; }
+  .movie-summary {
+    font-size: 1rem; color: rgba(232, 245, 232, 0.7); line-height: 1.65;
+    border-top: 1px solid rgba(57, 255, 90, 0.1); padding-top: 1rem;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .rolling { display: flex; gap: 6px; align-items: center; justify-content: center; min-height: 100px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 1s ease-in-out infinite; }
+  .dot:nth-child(1) { background: var(--alien-green-bright); }
+  .dot:nth-child(2) { animation-delay: 0.2s; background: var(--alien-green-mid); }
+  .dot:nth-child(3) { animation-delay: 0.4s; background: var(--alien-green-muted); }
+  @keyframes pulse { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+  .count-badge {
+    margin-top: 2rem; font-size: 0.75rem; color: rgba(57, 255, 90, 0.25);
+    font-style: italic; font-family: 'Cinzel', serif; letter-spacing: 0.1em;
+  }
+  .no-movies {
+    color: var(--alien-green-muted); font-style: italic; font-size: 0.95rem;
+    padding: 1.5rem; border: 1px dashed rgba(57,255,90,0.15);
+    border-radius: 4px; text-align: center; line-height: 1.8;
+  }
+
+  /* GHOST LIVES */
+  .ghost-lives {
+    position: absolute; bottom: 1rem; right: 1rem;
+    display: flex; gap: 0.4rem; align-items: flex-end;
+    pointer-events: none; z-index: 10;
+  }
+  .ghost-life {
+    width: 48px; height: auto; display: block;
+    transition: opacity 0.1s;
+  }
+  .ghost-life.dying {
+    animation: ghostFall 0.6s ease-in forwards;
+  }
+  @keyframes ghostFall {
+    0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(60px) rotate(20deg); }
+  }
+
+  .lock-btn {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+    background: none;
+    border: 1px solid rgba(150, 2, 0, 0.5);
+    color: var(--horror-cream);
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    padding: 0.75rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .lock-btn:hover { background: rgba(150, 2, 0, 0.15); border-color: var(--horror-red); }
+
+  /* LOCK-IN SCREEN */
+  #screen-lockin {
+    background: #000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+  }
+  .lockin-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+    max-width: 480px;
+  }
+  .lockin-reel { width: 200px; height: auto; display: block; }
+  .lockin-message {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 700;
+    color: var(--horror-cream);
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+  }
+  .lockin-back {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    border-color: rgba(251,254,249,0.2);
+    color: rgba(251,254,249,0.4);
+  }
+  .lockin-back:hover {
+    background: rgba(251,254,249,0.05);
+    border-color: rgba(251,254,249,0.4);
+    color: var(--horror-cream);
+  }
+
+  /* PREVIEW SCREEN */
+  #screen-preview { background: #000; }
+  .preview-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+  .preview-main video { max-width: 100%; max-height: 80vh; border: 1px solid rgba(150, 2, 0, 0.4); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div id="eyes-overlay">
+  <img src="assets/placidplace-eyes-4636.gif" alt="">
+</div>
+
+<audio id="audio-horror" src="music/universfield-horror-background-atmosphere-156462.mp3" loop></audio>
+<audio id="audio-alien"  src="music/dragon-studio-alien-song-323613.mp3"></audio>
+<audio id="audio-stab"   src="music/yodguard-healing-magic-5-378667.mp3"></audio>
+<audio id="audio-scream" src="music/u_r7cny11q7r-man-death-scream-186763.mp3"></audio>
+
+<!-- SELECTION SCREEN -->
+<div id="screen-select" class="screen active">
+  <div class="horror-drip"><img src="assets/kuzu420-horror-13276.gif" alt=""></div>
+  <div class="select-inner">
+    <p class="eyebrow">Tonight's feature</p>
+    <h1 class="select-title">Something wicked this way comes.</h1>
+    <p class="select-subtitle">Step inside.</p>
+    <div class="theme-grid" id="theme-grid"></div>
+    <hr class="divider">
+    <p class="footer-note">A movie will be chosen for you. Resistance is futile.</p>
+  </div>
+</div>
+
+<!-- ALIEN SCREEN -->
+<div id="screen-alien" class="screen">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <span class="inner-header-title">Horror Night</span>
+  </div>
+  <div class="alien-main">
+    <div class="alien-critters">
+      <img src="assets/kuzu420-alien-16445.gif" alt="">
+      <img src="assets/kuzu420-monster-16822.gif" alt="">
+    </div>
+    <p class="alien-eyebrow">Transmission incoming</p>
+    <h1 class="alien-title">They're Already Here</h1>
+    <p class="alien-subtitle">Ready to make first contact?</p>
+
+    <label class="final-girl-toggle">
+      <input type="checkbox" id="final-girl-checkbox">
+      <span class="final-girl-label">Final Girl Mode — 3 picks only</span>
+    </label>
+
+    <button class="roll-btn" id="roll-btn" onclick="rollMovie()">✦ Pick our movie ✦</button>
+    <div class="result-area" id="result-area">
+      <p class="result-empty">Press the button. The stars will decide.</p>
+    </div>
+    <p class="count-badge" id="count-badge"></p>
+  </div>
+  <div class="ghost-lives" id="ghost-lives"></div>
+</div>
+
+<!-- LOCK-IN SCREEN -->
+<div id="screen-lockin" class="screen">
+  <div class="lockin-main">
+    <img src="" id="lockin-reel" alt="" class="lockin-reel">
+    <p class="lockin-message" id="lockin-message"></p>
+  </div>
+  <button class="back-btn lockin-back" onclick="goBack()">← Choose again</button>
+</div>
+
+<!-- PREVIEW SCREEN -->
+<div id="screen-preview" class="screen">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <span class="inner-header-title">Horror Night</span>
+  </div>
+  <div class="preview-main">
+    <video id="preview-video" src="videos/632afe70bdf28f5a3811b5c7c0282a0781916408.mp4" controls playsinline></video>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   MOVIE LIST
+   ===================================================== */
+var ALIEN_MOVIES = [
+  { id: "ALN001", name: "Alien",                runtime: 117, year: 1979, director: "Ridley Scott",                                                                                     language: "English", heart: true,  summary: "A commercial crew aboard the deep space towing vessel Nostromo is awakened from their cryo-sleep to investigate a distress call from an alien world." },
+  { id: "ALN002", name: "The Thing",            runtime: 109, year: 1982, director: "John Carpenter",                                                                                   language: "English", heart: true,  summary: "A research team in Antarctica is hunted by a shape-shifting alien that assumes the appearance of its victims." },
+  { id: "ALN003", name: "Annihilation",         runtime: 115, year: 2018, director: "Alex Garland",                                                                                     language: "English", heart: true,  summary: "A biologist signs up for a dangerous secret expedition into a mysterious zone where the laws of nature do not apply." },
+  { id: "ALN004", name: "V/H/S/Beyond",         runtime: 114, year: 2024, director: "Jay Cheel, Jordan Downey, Christian Long, Justin Long, Justin Martinez, Virat Pal, Kate Siegel",  language: "English", heart: false, summary: "An anthology of six frightening encounters caught on video camera, where other-worldly creatures invade and terrorise humans." },
+  { id: "ALN005", name: "Sputnik",              runtime: 113, year: 2020, director: "Egor Abramenko",                                                                                   language: "Russian", heart: false, summary: "Summoned to a secluded research facility at the height of the Cold War, a controversial young doctor examines a cosmonaut who may not have returned to Earth alone." },
+  { id: "ALN006", name: "Dark Skies",           runtime:  97, year: 2013, director: "Scott Stewart",                                                                                    language: "English", heart: false, summary: "As the Barrett family's peaceful suburban life is rocked by an escalating series of disturbing events, they come to learn that a terrifying and deadly force is after them, one which may have arrived from beyond the stars." },
+  { id: "ALN007", name: "Fire in the Sky",      runtime: 109, year: 1993, director: "Robert Lieberman",                                                                                 language: "English", heart: false, summary: "An Arizona logger mysteriously disappears for five days in an alleged encounter with a flying saucer in 1975. His co-workers endure ridicule and contempt as they are wrongly accused of murder." },
+  { id: "ALN008", name: "The Phoenix Tapes '97",runtime:  67, year: 2016, director: "Turner Clay",                                                                                      language: "English", heart: false, summary: "During the Phoenix Lights in 1997, four campers go missing and are never found." },
+  { id: "ALN009", name: "Phoenix Forgotten",    runtime:  87, year: 2017, director: "Justin Barber",                                                                                    language: "English", heart: false, summary: "Two decades after three teenagers disappeared in the wake of mysterious lights appearing above Phoenix, Arizona, unseen footage from that night has been discovered, chronicling the final hours of their fateful expedition." },
+  { id: "ALN010", name: "Aliens: Zone of Silence", runtime: 79, year: 2017, director: "Andy Fowler",                                                                                   language: "English", heart: false, summary: "After Morgan's brother Hal vanishes from the Mexican desert, Morgan sets out to uncover the truth about his disappearance. When she discovers an extraterrestrial presence, she must risk her life to expose the desert's otherworldly secret." },
+  { id: "ALN011", name: "Ick",                  runtime:  93, year: 2024, director: "Joseph Kahn",                                                                                      language: "English", heart: false, summary: "An unlucky high school science teacher, a sarcastic student, and her mother must deal with a parasitic alien entity known as \"The Ick\" that is encroaching upon their small town." },
+  { id: "ALN012", name: "Psycho Goreman",       runtime:  95, year: 2020, director: "Steven Kostanski",                                                                                 language: "English", heart: false, summary: "After unearthing a gem that controls an evil monster looking to destroy the Universe, a young girl and her brother use it to make him do their bidding." },
+  { id: "ALN013", name: "No One Will Save You", runtime:  93, year: 2023, director: "Brian Duffield",                                                                                   language: "English", heart: false, summary: "Brynn finds solace within the walls of the home where she grew up until she's awakened one night by strange noises from unearthly intruders." },
+  { id: "ALN014", name: "Event Horizon",        runtime:  96, year: 1997, director: "Paul W.S. Anderson",                                                                               language: "English", heart: false, summary: "In 2047, a rescue crew is sent to investigate the long-lost starship Event Horizon, which has mysteriously reappeared after vanishing seven years earlier — and something sinister has taken over its corridors." },
+  { id: "ALN015", name: "Nope",                 runtime: 130, year: 2022, director: "Jordan Peele",                                                                                     language: "English", heart: true,  summary: "In the remote California desert, a brother and sister who wrangle horses for Hollywood productions discover that a mysterious presence lurking in the skies above their ranch is responsible for a series of disturbing disappearances." },
+  { id: "ALN016", name: "Pitch Black",          runtime: 109, year: 2000, director: "David Twohy",                                                                                      language: "English", heart: false, summary: "When a transport ship crash-lands on a barren planet, the survivors soon discover that escaped convict Riddick isn't the only danger — deadly creatures hunt in the dark, and the planet is about to plunge into total eclipse." }
+];
+
+/* =====================================================
+   THUMBNAILS
+   ===================================================== */
+var ALIEN_THUMBNAILS = {
+  "ALN001": "ALN001.jpeg",
+  "ALN002": "ALN002.jpeg",
+  "ALN003": "ALN003.jpeg",
+  "ALN004": "ALN004.jpeg",
+  "ALN005": "ALN005.jpeg",
+  "ALN006": "ALN006.jpeg",
+  "ALN007": "ALN007.jpeg",
+  "ALN008": "ALN008.jpeg",
+  "ALN009": "ALN009.jpeg",
+  "ALN010": "ALN010.jpeg",
+  "ALN011": "ALN011.jpeg",
+  "ALN012": "ALN012.jpeg",
+  "ALN013": "ALN013.jpeg",
+  "ALN014": "ALN014.jpeg",
+  "ALN015": "ALN015.jpeg",
+  "ALN016": "ALN016.jpeg"
+};
+
+var THEMES = [
+  { id: "alien",   gif: "assets/placidplace-ufo-21287_128.gif",  name: "They're Already Here", desc: "Aliens, and not the friendly kind.", screen: "alien" },
+  { id: "preview", gif: "assets/kuzu420-okay-27234_128.gif",     name: "More coming soon",      desc: "Click for a preview... if you dare!",  screen: "preview" }
+];
+
+/* ---- AUDIO ---- */
+var horrorAudio = document.getElementById("audio-horror");
+var alienAudio  = document.getElementById("audio-alien");
+var stabAudio   = document.getElementById("audio-stab");
+var screamAudio = document.getElementById("audio-scream");
+horrorAudio.volume = 0.06;
+alienAudio.volume  = 0.5;
+stabAudio.volume   = 0.8;
+screamAudio.volume = 0.9;
+
+/* ---- EYES OVERLAY ---- */
+var eyes    = document.getElementById("eyes-overlay");
+var eyesImg = eyes.querySelector("img");
+function dismissEyes() {
+  setTimeout(function() {
+    eyes.style.opacity = "0";
+    setTimeout(function() { eyes.remove(); }, 1200);
+  }, 2400);
+}
+eyesImg.onload  = dismissEyes;
+eyesImg.onerror = function() { eyes.remove(); };
+if (eyesImg.complete) { dismissEyes(); }
+
+document.addEventListener("click", function() {
+  if (horrorAudio.paused) { horrorAudio.play().catch(function() {}); }
+}, { once: true });
+
+/* ---- HOVER SOUNDS ---- */
+function attachHoverSound(card, audio) {
+  card.addEventListener("mouseenter", function() {
+    audio.currentTime = 0;
+    audio.play().catch(function() {});
+  });
+  card.addEventListener("mouseleave", function() {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+}
+
+/* ---- THEME GRID ---- */
+function buildThemeGrid() {
+  var grid = document.getElementById("theme-grid");
+  THEMES.forEach(function(theme) {
+    var card = document.createElement("button");
+    card.className = "theme-card";
+    card.innerHTML =
+      '<img src="' + theme.gif + '" class="theme-gif" alt="">' +
+      '<div><div class="theme-name">' + theme.name + '</div>' +
+      '<div class="theme-desc">' + theme.desc + '</div></div>' +
+      '<span class="theme-arrow">→</span>';
+    card.onclick = function() { showScreen(theme.screen); };
+    if (theme.id === "alien")   { attachHoverSound(card, alienAudio); }
+    if (theme.id === "preview") { attachHoverSound(card, stabAudio); }
+    grid.appendChild(card);
+  });
+}
+
+/* ---- SCREEN SWITCHING ---- */
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach(function(s) { s.classList.remove("active"); });
+  document.getElementById("screen-" + name).classList.add("active");
+  if (name === "alien") {
+    resetAlienScreen();
+  }
+  if (name === "preview") {
+    var vid = document.getElementById("preview-video");
+    vid.currentTime = 0;
+    vid.play().catch(function() {});
+  } else {
+    var vid = document.getElementById("preview-video");
+    vid.pause();
+    vid.currentTime = 0;
+  }
+}
+
+function goBack() { showScreen("select"); }
+
+var LOCKIN_MESSAGES = [
+  "There is no turning back now.",
+  "The darkness has chosen.",
+  "Your fate is sealed.",
+  "Whatever happens next, you asked for this.",
+  "The film begins. The horror follows.",
+  "Tonight's going to be a good one.",
+  "Oh, you are going to love this.",
+  "Buckle up.",
+  "This one's going to leave a mark.",
+  "You picked a good night to be scared.",
+  "Hold each other. You'll need it.",
+  "No leaving. No skipping. No mercy.",
+  "If you get scared, that's your problem.",
+  "Snacks ready? Good. Sleep? Optional.",
+  "You brought this on yourself. Both of you.",
+  "It already knows you're watching.",
+  "Something in this film is watching back.",
+  "You were warned. You chose anyway.",
+  "The lights go off now.",
+  "Don't look behind you."
+];
+
+var OUTRO_GIFS = [
+  "outros/dezyne_3d-skeleton-25956_512.gif",
+  "outros/ekkant-bat-23695_512.gif",
+  "outros/havingfunandsharing-jack-o-lantern-15778_512.gif",
+  "outros/kuzu420-dancing-15139_512.gif",
+  "outros/kuzu420-grey-16322_512.gif",
+  "outros/manegpx-cuckoo-clock-25728_256.gif",
+  "outros/mxj_files-eye-22882_512.gif",
+  "outros/placidplace-halloween-8548_512.gif",
+  "outros/placidplace-horror-10710_512.gif"
+];
+
+function lockIn() {
+  var msg = LOCKIN_MESSAGES[Math.floor(Math.random() * LOCKIN_MESSAGES.length)];
+  var gif = OUTRO_GIFS[Math.floor(Math.random() * OUTRO_GIFS.length)];
+  document.getElementById("lockin-message").textContent = msg;
+  document.getElementById("lockin-reel").src = gif;
+  showScreen("lockin");
+}
+
+/* ---- SHUFFLE QUEUE ---- */
+var shuffleQueue = [];
+function refillQueue() {
+  shuffleQueue = ALIEN_MOVIES.slice();
+  for (var i = shuffleQueue.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = shuffleQueue[i]; shuffleQueue[i] = shuffleQueue[j]; shuffleQueue[j] = tmp;
+  }
+}
+
+/* ---- FINAL GIRL STATE ---- */
+var finalGirlLives = 3;
+var finalGirlActive = false;
+
+function resetAlienScreen() {
+  document.getElementById("result-area").innerHTML = '<p class="result-empty">Press the button. The stars will decide.</p>';
+  document.getElementById("count-badge").textContent = "";
+  document.getElementById("final-girl-checkbox").checked = false;
+  document.getElementById("roll-btn").disabled = false;
+  finalGirlActive = false;
+  finalGirlLives = 3;
+  renderGhosts();
+}
+
+function renderGhosts() {
+  var container = document.getElementById("ghost-lives");
+  container.innerHTML = "";
+  if (!finalGirlActive) return;
+  for (var i = 0; i < finalGirlLives; i++) {
+    var img = document.createElement("img");
+    img.src = "assets/mxj_files-ghost-23282.gif";
+    img.className = "ghost-life";
+    img.alt = "life";
+    container.appendChild(img);
+  }
+}
+
+document.getElementById("final-girl-checkbox").addEventListener("change", function() {
+  finalGirlActive = this.checked;
+  finalGirlLives = 3;
+  document.getElementById("roll-btn").disabled = false;
+  renderGhosts();
+});
+
+function killGhost() {
+  var container = document.getElementById("ghost-lives");
+  var ghosts = container.querySelectorAll(".ghost-life");
+  if (!ghosts.length) return;
+  var last = ghosts[ghosts.length - 1];
+  last.classList.add("dying");
+  screamAudio.currentTime = 0;
+  screamAudio.play().catch(function() {});
+  setTimeout(function() { last.remove(); }, 600);
+}
+
+/* ---- ROLL ---- */
+async function rollMovie() {
+  var area  = document.getElementById("result-area");
+  var badge = document.getElementById("count-badge");
+  var btn   = document.getElementById("roll-btn");
+
+  if (finalGirlActive) {
+    if (finalGirlLives <= 0) return;
+    finalGirlLives--;
+    killGhost();
+    if (finalGirlLives <= 0) {
+      btn.disabled = true;
+    }
+  }
+
+  area.innerHTML = '<div class="rolling"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  badge.textContent = "";
+
+  await new Promise(function(r) { setTimeout(r, 800); });
+
+  if (!ALIEN_MOVIES.length) {
+    area.innerHTML = '<div class="no-movies">No movies in the list yet.</div>';
+    return;
+  }
+
+  if (!shuffleQueue.length) { refillQueue(); }
+  var pick = shuffleQueue.pop();
+
+  var parts = [];
+  if (pick.year)     { parts.push(pick.year); }
+  if (pick.runtime)  { parts.push(pick.runtime + " min"); }
+  if (pick.director) { parts.push(pick.director); }
+  if (pick.language && pick.language !== "English") { parts.push(pick.language); }
+  var meta = parts.join(" · ");
+
+  var thumbFile = ALIEN_THUMBNAILS[pick.id];
+  var thumbHtml = thumbFile
+    ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
+    : '<div class="movie-thumb-missing">?</div>';
+
+  var remaining = shuffleQueue.length;
+  var queueNote = finalGirlActive
+    ? (finalGirlLives > 0 ? finalGirlLives + " pick" + (finalGirlLives !== 1 ? "s" : "") + " remaining" : "No more picks — final girl survived!")
+    : (remaining > 0 ? remaining + " left before any repeats" : "Full rotation complete — reshuffling...");
+
+  var heartHtml = pick.heart
+    ? '<img src="assets/pikura-heart-20751_128.gif" alt="♥" style="width:28px;height:auto;position:absolute;top:0.75rem;left:0.75rem;">'
+    : "";
+
+  area.innerHTML =
+    '<div class="movie-card" style="position:relative;">' +
+      heartHtml +
+      '<div class="movie-card-inner">' +
+        thumbHtml +
+        '<div class="movie-text">' +
+          '<div class="movie-title">' + pick.name + "</div>" +
+          (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
+          (pick.summary ? '<div class="movie-summary">' + pick.summary + "</div>" : "") +
+        "</div>" +
+      "</div>" +
+      '<button class="lock-btn" onclick="lockIn()">✦ We\'re watching this one ✦</button>' +
+    "</div>";
+
+  badge.textContent = queueNote;
+}
+
+buildThemeGrid();
+</script>
+</body>
+</html>
