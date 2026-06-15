@@ -1229,7 +1229,7 @@ function renderMarathonResults() {
       movies.forEach(function(m) {
         if (m.id && m.id.startsWith('ALN')) {
           ALIEN_MOVIES.push(m);
-          ALIEN_THUMBNAILS[m.id] = m.poster_file;
+          ALIEN_THUMBNAILS[m.id] = m.id + '.jpeg';
         }
       });
       buildThemeGrid();
