@@ -511,6 +511,7 @@
 <audio id="audio-alien"  src="music/dragon-studio-alien-song-323613.mp3"></audio>
 <audio id="audio-stab"   src="music/yodguard-healing-magic-5-378667.mp3"></audio>
 <audio id="audio-scream" src="music/u_r7cny11q7r-man-death-scream-186763.mp3"></audio>
+<audio id="audio-folk"   src="music/zuzannajedrys-crunching-leaves-262278.mp3"></audio>
 
 <!-- SELECTION SCREEN -->
 <div id="screen-select" class="screen active">
@@ -563,7 +564,7 @@
   </div>
   <div class="alien-main">
     <div class="alien-critters">
-      <img src="assets/kuzu420-horror-13276.gif" alt="">
+      <img src="assets/kuzu420-mosquitoes-13105_512.gif" alt="">
     </div>
     <p class="alien-eyebrow">The old ways never died</p>
     <h1 class="alien-title">Into the Woods</h1>
@@ -781,7 +782,7 @@ function parseCSV(text) {
 
 var THEMES = [
   { id: "alien",   gif: "assets/placidplace-ufo-21287_128.gif", name: "They're Already Here", desc: "Aliens, and not the friendly kind.",           screen: "alien" },
-  { id: "folk",    gif: "assets/kuzu420-horror-13276.gif",       name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"  },
+  { id: "folk",    gif: "assets/kuzu420-mosquitoes-13105_512.gif", name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"  },
   { id: "preview", gif: "assets/kuzu420-okay-27234_128.gif",    name: "More coming soon",     desc: "Click for a preview... if you dare!",           screen: "preview" }
 ];
 
@@ -790,10 +791,12 @@ var horrorAudio = document.getElementById("audio-horror");
 var alienAudio  = document.getElementById("audio-alien");
 var stabAudio   = document.getElementById("audio-stab");
 var screamAudio = document.getElementById("audio-scream");
+var folkAudio   = document.getElementById("audio-folk");
 horrorAudio.volume = 0.06;
 alienAudio.volume  = 0.5;
 stabAudio.volume   = 0.8;
 screamAudio.volume = 0.9;
+folkAudio.volume   = 0.6;
 
 /* ---- EYES OVERLAY ---- */
 var eyes    = document.getElementById("eyes-overlay");
@@ -902,7 +905,7 @@ function buildThemeGrid() {
       '<span class="theme-arrow">→</span>';
     card.onclick = function() { showScreen(theme.screen); };
     if (theme.id === "alien")   { attachHoverSound(card, alienAudio); }
-    if (theme.id === "folk")    { attachHoverSound(card, stabAudio); }
+    if (theme.id === "folk")    { attachHoverSound(card, folkAudio); }
     if (theme.id === "preview") { attachHoverSound(card, stabAudio); }
     grid.appendChild(card);
   });
@@ -1321,7 +1324,7 @@ function renderMarathonResults() {
   // Slots
   marathonSlots.forEach(function(slot, i) {
     var m = slot.movie;
-    var thumbFile = ALIEN_THUMBNAILS[m.id];
+    var thumbFile = ALIEN_THUMBNAILS[m.id] || FOLK_THUMBNAILS[m.id];
     var thumbHtml = thumbFile
       ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
       : '<div class="movie-thumb-missing">?</div>';
