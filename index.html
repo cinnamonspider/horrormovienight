@@ -152,6 +152,12 @@
   .marathon-home-arrow { color: var(--beige); font-size: 1rem; opacity: 0; transition: opacity 0.25s; flex-shrink: 0; }
   .marathon-home-card:hover .marathon-home-arrow { opacity: 0.7; }
 
+  .section-label {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(209, 191, 172, 0.45); margin-bottom: 0.85rem;
+    width: 100%; text-align: left;
+  }
   .divider {
     border: none; border-top: 1px solid rgba(209, 191, 172, 0.12);
     width: 100%; margin: 1.5rem 0;
@@ -431,6 +437,7 @@
     <h1 class="main-title">What are we watching?</h1>
     <p class="main-subtitle">Choose your poison.</p>
 
+    <p class="section-label">Find One Movie</p>
     <div class="genre-grid">
       <a class="genre-card" href="horror.html" id="card-horror">
         <div class="genre-gif-wrap">
@@ -450,6 +457,7 @@
       </a>
     </div>
 
+    <p class="section-label">Can't decide on just one?</p>
     <button class="marathon-home-card" onclick="openMarathon()" id="card-marathon">
       <span class="marathon-home-icon">🎞</span>
       <div class="marathon-home-text">
