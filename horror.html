@@ -593,100 +593,6 @@
   <button class="back-btn lockin-back" onclick="goBack()">← Choose again</button>
 </div>
 
-<!-- MARATHON SCREEN -->
-<div id="screen-marathon" class="screen">
-  <div class="marathon-header">
-    <button class="marathon-back-btn-header" onclick="goBack()">← Back</button>
-    <span class="marathon-header-title">Horror Night</span>
-  </div>
-  <div class="marathon-body">
-    <!-- SETUP -->
-    <div id="marathon-setup">
-      <h2 class="marathon-title">Movie Marathon Mode</h2>
-      <p class="marathon-subtitle">Build a double or triple feature from your chosen themes.</p>
-
-      <div class="marathon-section">
-        <span class="marathon-section-label">Desired Total Length <em style="font-family:'Crimson Text',serif;font-style:italic;text-transform:none;letter-spacing:0;font-size:0.85rem;color:rgba(159,107,160,0.6)">(optional)</em></span>
-        <div class="marathon-length-row">
-          <select class="marathon-select" id="marathon-hours">
-            <option value="0">0 hr</option>
-            <option value="1">1 hr</option>
-            <option value="2">2 hr</option>
-            <option value="3">3 hr</option>
-            <option value="4">4 hr</option>
-            <option value="5">5 hr</option>
-            <option value="6">6 hr</option>
-            <option value="7">7 hr</option>
-            <option value="8">8 hr</option>
-          </select>
-          <span class="marathon-length-sep">and</span>
-          <select class="marathon-select" id="marathon-minutes">
-            <option value="0">0 min</option>
-            <option value="15">15 min</option>
-            <option value="30">30 min</option>
-            <option value="45">45 min</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="marathon-section">
-        <span class="marathon-section-label">Include Themes</span>
-        <label class="marathon-theme-item">
-          <input type="checkbox" id="marathon-theme-alien" checked>
-          <div>
-            <div class="marathon-theme-item-name">They're Already Here</div>
-            <div class="marathon-theme-item-desc">Aliens, and not the friendly kind.</div>
-          </div>
-        </label>
-        <label class="marathon-theme-item">
-          <input type="checkbox" id="marathon-theme-folk" checked>
-          <div>
-            <div class="marathon-theme-item-name">Into the Woods</div>
-            <div class="marathon-theme-item-desc">Where the Old Gods Wait.</div>
-          </div>
-        </label>
-      </div>
-
-      <div class="marathon-section" id="marathon-keyword-section" style="display:none">
-        <span class="marathon-section-label">Filter by Keyword <em style="font-family:'Crimson Text',serif;font-style:italic;text-transform:none;letter-spacing:0;font-size:0.85rem;color:rgba(159,107,160,0.6)">(optional — any match)</em></span>
-        <div id="marathon-keyword-chips" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;"></div>
-        <div id="marathon-keyword-pool-note" style="font-size:0.78rem;color:var(--horror-mauve);font-style:italic;margin-top:0.5rem;"></div>
-      </div>
-
-      <div class="marathon-section">
-        <span class="marathon-section-label">Feature Mode</span>
-        <div class="marathon-radio-row">
-          <label class="marathon-radio-item">
-            <input type="radio" name="feature-mode" value="2" checked>
-            <span class="marathon-radio-label">Double Feature</span>
-          </label>
-          <label class="marathon-radio-item">
-            <input type="radio" name="feature-mode" value="3">
-            <span class="marathon-radio-label">Triple Feature</span>
-          </label>
-        </div>
-      </div>
-
-      <button class="marathon-generate-btn" onclick="generateMarathon()">✦ Generate Lineup ✦</button>
-    </div>
-
-    <!-- RESULTS -->
-    <div id="marathon-results" style="display:none" class="marathon-results-body">
-      <!-- populated by JS -->
-    </div>
-  </div>
-</div>
-
-<!-- PREVIEW SCREEN -->
-<div id="screen-preview" class="screen">
-  <div class="inner-header">
-    <button class="back-btn" onclick="goBack()">← Back</button>
-    <span class="inner-header-title">Horror Night</span>
-  </div>
-  <div class="preview-main">
-    <video id="preview-video" src="videos/632afe70bdf28f5a3811b5c7c0282a0781916408.mp4" controls playsinline></video>
-  </div>
-</div>
 
 <script>
 /* =====================================================
@@ -781,10 +687,8 @@ function parseCSV(text) {
 }
 
 var THEMES = [
-  { id: "alien",    gif: "assets/placidplace-ufo-21287_128.gif",    name: "They're Already Here", desc: "Aliens, and not the friendly kind.",           screen: "alien"    },
-  { id: "folk",     gif: "assets/kuzu420-mosquitoes-13105_512.gif",  name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"     },
-  { id: "marathon", gif: "assets/prawny-film-25972.gif",             name: "Movie Marathon Mode",  desc: "Build a double or triple feature.",             screen: "marathon" },
-  { id: "preview",  gif: "assets/kuzu420-okay-27234_128.gif",        name: "More coming soon",     desc: "Click for a preview... if you dare!",           screen: "preview"  }
+  { id: "alien", gif: "assets/placidplace-ufo-21287_128.gif",   name: "They're Already Here", desc: "Aliens, and not the friendly kind.", screen: "alien" },
+  { id: "folk",  gif: "assets/kuzu420-mosquitoes-13105_512.gif", name: "Into the Woods",       desc: "Where the Old Gods Wait.",           screen: "folk"  }
 ];
 
 /* ---- AUDIO ---- */
@@ -849,50 +753,6 @@ function renderKeywords(keywords) {
   return html;
 }
 
-/* ---- KEYWORD FILTER ---- */
-function buildKeywordFilter() {
-  var allKeywords = {};
-  ALIEN_MOVIES.concat(FOLK_MOVIES).forEach(function(m) {
-    (m.keywords || []).forEach(function(k) { allKeywords[k] = true; });
-  });
-  var sorted = Object.keys(allKeywords).sort();
-  var container = document.getElementById('marathon-keyword-chips');
-  container.innerHTML = '';
-  sorted.forEach(function(kw) {
-    var span = document.createElement('span');
-    span.className = 'kw-filter-chip';
-    span.textContent = kw;
-    span.addEventListener('click', function() {
-      span.classList.toggle('selected');
-      updateKeywordPoolNote();
-    });
-    container.appendChild(span);
-  });
-  if (sorted.length > 0) {
-    document.getElementById('marathon-keyword-section').style.display = '';
-  }
-}
-
-function getSelectedKeywords() {
-  var chips = document.querySelectorAll('#marathon-keyword-chips .kw-filter-chip.selected');
-  var keys = [];
-  chips.forEach(function(c) { keys.push(c.textContent); });
-  return keys;
-}
-
-function updateKeywordPoolNote() {
-  var selected = getSelectedKeywords();
-  var note = document.getElementById('marathon-keyword-pool-note');
-  if (!selected.length) {
-    note.textContent = '';
-    return;
-  }
-  var count = ALIEN_MOVIES.concat(FOLK_MOVIES).filter(function(m) {
-    return (m.keywords || []).some(function(k) { return selected.indexOf(k) !== -1; });
-  }).length;
-  note.textContent = count + ' movie' + (count !== 1 ? 's' : '') + ' match';
-}
-
 /* ---- THEME GRID ---- */
 function buildThemeGrid() {
   var grid = document.getElementById("theme-grid");
@@ -905,10 +765,8 @@ function buildThemeGrid() {
       '<div class="theme-desc">' + theme.desc + '</div></div>' +
       '<span class="theme-arrow">→</span>';
     card.onclick = function() { showScreen(theme.screen); };
-    if (theme.id === "alien")    { attachHoverSound(card, alienAudio); }
-    if (theme.id === "folk")     { attachHoverSound(card, folkAudio); }
-    if (theme.id === "marathon") { attachHoverSound(card, stabAudio); }
-    if (theme.id === "preview")  { attachHoverSound(card, stabAudio); }
+    if (theme.id === "alien") { attachHoverSound(card, alienAudio); }
+    if (theme.id === "folk")  { attachHoverSound(card, folkAudio); }
     grid.appendChild(card);
   });
 }
@@ -922,18 +780,6 @@ function showScreen(name) {
   }
   if (name === "folk") {
     resetFolkScreen();
-  }
-  if (name === "marathon") {
-    resetMarathon();
-  }
-  if (name === "preview") {
-    var vid = document.getElementById("preview-video");
-    vid.currentTime = 0;
-    vid.play().catch(function() {});
-  } else {
-    var vid = document.getElementById("preview-video");
-    vid.pause();
-    vid.currentTime = 0;
   }
 }
 
@@ -1232,163 +1078,6 @@ async function rollFolkMovie() {
   badge.textContent = queueNote;
 }
 
-/* ---- MARATHON MODE ---- */
-var marathonSlots = [];
-
-function resetMarathon() {
-  marathonSlots = [];
-  document.getElementById("marathon-setup").style.display = "block";
-  document.getElementById("marathon-results").style.display = "none";
-  document.getElementById("marathon-results").innerHTML = "";
-}
-
-function buildMarathonPool() {
-  var pool = [];
-  if (document.getElementById("marathon-theme-alien").checked) {
-    pool = pool.concat(ALIEN_MOVIES);
-  }
-  if (document.getElementById("marathon-theme-folk").checked) {
-    pool = pool.concat(FOLK_MOVIES);
-  }
-  var selectedKeywords = getSelectedKeywords();
-  if (selectedKeywords.length > 0) {
-    pool = pool.filter(function(m) {
-      return (m.keywords || []).some(function(k) { return selectedKeywords.indexOf(k) !== -1; });
-    });
-  }
-  return pool;
-}
-
-function getFeatureCount() {
-  var checked = document.querySelector('input[name="feature-mode"]:checked');
-  return checked ? parseInt(checked.value) : 2;
-}
-
-function pickFromPool(pool, exclude) {
-  var available = pool.filter(function(m) {
-    return !exclude.some(function(e) { return e && e.id === m.id; });
-  });
-  if (!available.length) available = pool.slice();
-  return available[Math.floor(Math.random() * available.length)];
-}
-
-function generateMarathon() {
-  var pool = buildMarathonPool();
-  if (!pool.length) {
-    alert("Please select at least one theme.");
-    return;
-  }
-  var count = getFeatureCount();
-  marathonSlots = [];
-  for (var i = 0; i < count; i++) {
-    var picked = pickFromPool(pool, marathonSlots.map(function(s) { return s.movie; }));
-    marathonSlots.push({ movie: picked, frozen: false });
-  }
-  renderMarathonResults();
-}
-
-function rerollSingleSlot(index) {
-  var pool = buildMarathonPool();
-  var others = marathonSlots.filter(function(_, i) { return i !== index; }).map(function(s) { return s.movie; });
-  marathonSlots[index].movie = pickFromPool(pool, others);
-  renderMarathonResults();
-}
-
-function rerollUnfrozen() {
-  var pool = buildMarathonPool();
-  var frozenMovies = marathonSlots.filter(function(s) { return s.frozen; }).map(function(s) { return s.movie; });
-  marathonSlots = marathonSlots.map(function(slot) {
-    if (slot.frozen) return slot;
-    var exclude = frozenMovies.concat(marathonSlots.filter(function(s) { return s.frozen; }).map(function(s) { return s.movie; }));
-    return { movie: pickFromPool(pool, exclude), frozen: false };
-  });
-  renderMarathonResults();
-}
-
-function toggleMarathonFreeze(index) {
-  marathonSlots[index].frozen = !marathonSlots[index].frozen;
-  renderMarathonResults();
-}
-
-function renderMarathonResults() {
-  document.getElementById("marathon-setup").style.display = "none";
-  var results = document.getElementById("marathon-results");
-  results.style.display = "flex";
-
-  var html = "";
-
-  // Actions bar
-  html += '<div class="marathon-results-actions">';
-  html += '<button class="marathon-reroll-all-btn" onclick="rerollUnfrozen()">↺ Reroll Unfrozen</button>';
-  html += '<button class="marathon-adjust-btn" onclick="resetMarathon()">← Adjust Settings</button>';
-  html += "</div>";
-
-  // Slots
-  marathonSlots.forEach(function(slot, i) {
-    var m = slot.movie;
-    var thumbFile = ALIEN_THUMBNAILS[m.id] || FOLK_THUMBNAILS[m.id];
-    var thumbHtml = thumbFile
-      ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
-      : '<div class="movie-thumb-missing">?</div>';
-    var parts = [];
-    if (m.year) parts.push(m.year);
-    if (m.runtime) parts.push(m.runtime + " min");
-    if (m.director) parts.push(m.director);
-    if (m.language && m.language !== "English") parts.push(m.language);
-    var meta = parts.join(" · ");
-
-    html += '<div class="marathon-slot' + (slot.frozen ? " frozen" : "") + '">';
-    html += '<div class="marathon-slot-header">';
-    html += '<span class="marathon-slot-num">Film ' + (i + 1) + '</span>';
-    if (!slot.frozen) {
-      html += '<button class="marathon-slot-reroll-btn" onclick="rerollSingleSlot(' + i + ')">↺ Reroll</button>';
-    }
-    html += '<label class="marathon-freeze-label">';
-    html += '<input type="checkbox" ' + (slot.frozen ? "checked" : "") + ' onchange="toggleMarathonFreeze(' + i + ')">';
-    html += (slot.frozen ? "Frozen" : "Freeze");
-    html += "</label>";
-    html += "</div>";
-    html += '<div class="movie-card-inner">' + thumbHtml;
-    html += '<div class="movie-text">';
-    html += '<div class="movie-title">' + m.name + "</div>";
-    if (meta) html += '<div class="movie-meta">' + meta + "</div>";
-    if (m.tagline) html += '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + m.tagline + "</div>";
-    if (m.overview) html += '<div class="movie-summary">' + m.overview + "</div>";
-    if (m.cast_top5) html += '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (m.tmdb_rating ? m.tmdb_rating.toFixed(1) + ' · ' : '') + m.cast_top5 + "</div>";
-    html += renderKeywords(m.keywords);
-    html += "</div></div>";
-    html += "</div>";
-  });
-
-  // Total runtime
-  var total = marathonSlots.reduce(function(sum, s) { return sum + (s.movie.runtime || 0); }, 0);
-  var hrs = Math.floor(total / 60);
-  var mins = total % 60;
-  var totalStr = hrs > 0 ? hrs + "h " + mins + "m" : mins + "m";
-
-  var desiredH = parseInt(document.getElementById("marathon-hours").value) || 0;
-  var desiredM = parseInt(document.getElementById("marathon-minutes").value) || 0;
-  var desired = desiredH * 60 + desiredM;
-
-  html += '<div class="marathon-total-bar">';
-  html += '<span class="marathon-total-label">Combined Runtime</span>';
-  html += '<span class="marathon-total-value">' + totalStr + " (" + total + " min)</span>";
-  if (desired > 0) {
-    var diff = total - desired;
-    var sign = diff > 0 ? "+" : "";
-    var dHrs = Math.floor(Math.abs(diff) / 60);
-    var dMins = Math.abs(diff) % 60;
-    var diffStr = dHrs > 0 ? dHrs + "h " + dMins + "m" : dMins + "m";
-    var targetStr = desiredH + "h " + desiredM + "m";
-    var note = diff === 0
-      ? "Exactly on target (" + targetStr + ")."
-      : sign + (diff > 0 ? diffStr + " over" : diffStr + " under") + " your " + targetStr + " target.";
-    html += '<span class="marathon-target-note">' + note + "</span>";
-  }
-  html += "</div>";
-
-  results.innerHTML = html;
-}
 
 (function init() {
   fetch('./movies_enriched.csv')
@@ -1410,7 +1099,6 @@ function renderMarathonResults() {
         }
       });
       buildThemeGrid();
-      buildKeywordFilter();
     })
     .catch(function(err) {
       document.body.innerHTML = '<div style="color:red;padding:2rem;font-family:monospace">Failed to load movie data: ' + err.message + '</div>';

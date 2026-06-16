@@ -567,6 +567,12 @@ var GENRES = [
         name: "They're Already Here",
         desc: "Aliens, and not the friendly kind.",
         filter: function(m) { return m.id && m.id.startsWith('ALN'); }
+      },
+      {
+        id: "folk",
+        name: "Into the Woods",
+        desc: "Where the Old Gods Wait.",
+        filter: function(m) { return m.id && m.id.startsWith('FLK'); }
       }
     ]
   },
@@ -1026,7 +1032,7 @@ document.getElementById('kw-search').addEventListener('input', function() {
     .then(function(text) {
       ALL_MOVIES = parseCSV(text);
       ALL_MOVIES.forEach(function(m) {
-        if (m.id) THUMBNAILS[m.id] = m.id + '.jpeg';
+        if (m.id) THUMBNAILS[m.id] = m.poster_file || (m.id + '.jpeg');
       });
       buildGenreTree();
       refreshKeywordFilter();
