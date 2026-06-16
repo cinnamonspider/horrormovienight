@@ -555,6 +555,34 @@
   <div class="ghost-lives" id="ghost-lives"></div>
 </div>
 
+<!-- FOLK HORROR SCREEN -->
+<div id="screen-folk" class="screen">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <span class="inner-header-title">Horror Night</span>
+  </div>
+  <div class="alien-main">
+    <div class="alien-critters">
+      <img src="assets/kuzu420-horror-13276.gif" alt="">
+    </div>
+    <p class="alien-eyebrow">The old ways never died</p>
+    <h1 class="alien-title">Into the Woods</h1>
+    <p class="alien-subtitle">Where the Old Gods Wait</p>
+
+    <label class="final-girl-toggle">
+      <input type="checkbox" id="folk-final-girl-checkbox">
+      <span class="final-girl-label">Final Girl Mode — 3 picks only</span>
+    </label>
+
+    <button class="roll-btn" id="folk-roll-btn" onclick="rollFolkMovie()">✦ Pick our movie ✦</button>
+    <div class="result-area" id="folk-result-area">
+      <p class="result-empty">Press the button. The forest will decide.</p>
+    </div>
+    <p class="count-badge" id="folk-count-badge"></p>
+  </div>
+  <div class="ghost-lives" id="folk-ghost-lives"></div>
+</div>
+
 <!-- LOCK-IN SCREEN -->
 <div id="screen-lockin" class="screen">
   <div class="lockin-main">
@@ -609,6 +637,13 @@
             <div class="marathon-theme-item-desc">Aliens, and not the friendly kind.</div>
           </div>
         </label>
+        <label class="marathon-theme-item">
+          <input type="checkbox" id="marathon-theme-folk" checked>
+          <div>
+            <div class="marathon-theme-item-name">Into the Woods</div>
+            <div class="marathon-theme-item-desc">Where the Old Gods Wait.</div>
+          </div>
+        </label>
       </div>
 
       <div class="marathon-section" id="marathon-keyword-section" style="display:none">
@@ -658,6 +693,8 @@
    ===================================================== */
 var ALIEN_MOVIES = [];
 var ALIEN_THUMBNAILS = {};
+var FOLK_MOVIES = [];
+var FOLK_THUMBNAILS = {};
 
 /* =====================================================
    CSV PARSER
@@ -743,8 +780,9 @@ function parseCSV(text) {
 }
 
 var THEMES = [
-  { id: "alien",   gif: "assets/placidplace-ufo-21287_128.gif", name: "They're Already Here", desc: "Aliens, and not the friendly kind.",          screen: "alien" },
-  { id: "preview", gif: "assets/kuzu420-okay-27234_128.gif",    name: "More coming soon",     desc: "Click for a preview... if you dare!",          screen: "preview" }
+  { id: "alien",   gif: "assets/placidplace-ufo-21287_128.gif", name: "They're Already Here", desc: "Aliens, and not the friendly kind.",           screen: "alien" },
+  { id: "folk",    gif: "assets/kuzu420-horror-13276.gif",       name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"  },
+  { id: "preview", gif: "assets/kuzu420-okay-27234_128.gif",    name: "More coming soon",     desc: "Click for a preview... if you dare!",           screen: "preview" }
 ];
 
 /* ---- AUDIO ---- */
@@ -810,7 +848,7 @@ function renderKeywords(keywords) {
 /* ---- KEYWORD FILTER ---- */
 function buildKeywordFilter() {
   var allKeywords = {};
-  ALIEN_MOVIES.forEach(function(m) {
+  ALIEN_MOVIES.concat(FOLK_MOVIES).forEach(function(m) {
     (m.keywords || []).forEach(function(k) { allKeywords[k] = true; });
   });
   var sorted = Object.keys(allKeywords).sort();
@@ -845,7 +883,7 @@ function updateKeywordPoolNote() {
     note.textContent = '';
     return;
   }
-  var count = ALIEN_MOVIES.filter(function(m) {
+  var count = ALIEN_MOVIES.concat(FOLK_MOVIES).filter(function(m) {
     return (m.keywords || []).some(function(k) { return selected.indexOf(k) !== -1; });
   }).length;
   note.textContent = count + ' movie' + (count !== 1 ? 's' : '') + ' match';
@@ -864,6 +902,7 @@ function buildThemeGrid() {
       '<span class="theme-arrow">→</span>';
     card.onclick = function() { showScreen(theme.screen); };
     if (theme.id === "alien")   { attachHoverSound(card, alienAudio); }
+    if (theme.id === "folk")    { attachHoverSound(card, stabAudio); }
     if (theme.id === "preview") { attachHoverSound(card, stabAudio); }
     grid.appendChild(card);
   });
@@ -875,6 +914,9 @@ function showScreen(name) {
   document.getElementById("screen-" + name).classList.add("active");
   if (name === "alien") {
     resetAlienScreen();
+  }
+  if (name === "folk") {
+    resetFolkScreen();
   }
   if (name === "marathon") {
     resetMarathon();
@@ -1063,6 +1105,128 @@ async function rollMovie() {
   badge.textContent = queueNote;
 }
 
+/* ---- FOLK ROLL ---- */
+var folkShuffleQueue = [];
+var folkFinalGirlLives = 3;
+var folkFinalGirlActive = false;
+
+function refillFolkQueue() {
+  folkShuffleQueue = FOLK_MOVIES.slice();
+  for (var i = folkShuffleQueue.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = folkShuffleQueue[i]; folkShuffleQueue[i] = folkShuffleQueue[j]; folkShuffleQueue[j] = tmp;
+  }
+}
+
+function resetFolkScreen() {
+  document.getElementById("folk-result-area").innerHTML = '<p class="result-empty">Press the button. The forest will decide.</p>';
+  document.getElementById("folk-count-badge").textContent = "";
+  document.getElementById("folk-final-girl-checkbox").checked = false;
+  document.getElementById("folk-roll-btn").disabled = false;
+  folkFinalGirlActive = false;
+  folkFinalGirlLives = 3;
+  renderFolkGhosts();
+}
+
+function renderFolkGhosts() {
+  var container = document.getElementById("folk-ghost-lives");
+  container.innerHTML = "";
+  if (!folkFinalGirlActive) return;
+  for (var i = 0; i < folkFinalGirlLives; i++) {
+    var img = document.createElement("img");
+    img.src = "assets/mxj_files-ghost-23282.gif";
+    img.className = "ghost-life";
+    img.alt = "life";
+    container.appendChild(img);
+  }
+}
+
+document.getElementById("folk-final-girl-checkbox").addEventListener("change", function() {
+  folkFinalGirlActive = this.checked;
+  folkFinalGirlLives = 3;
+  document.getElementById("folk-roll-btn").disabled = false;
+  renderFolkGhosts();
+});
+
+function killFolkGhost() {
+  var container = document.getElementById("folk-ghost-lives");
+  var ghosts = container.querySelectorAll(".ghost-life");
+  if (!ghosts.length) return;
+  var last = ghosts[ghosts.length - 1];
+  last.classList.add("dying");
+  screamAudio.currentTime = 0;
+  screamAudio.play().catch(function() {});
+  setTimeout(function() { last.remove(); }, 600);
+}
+
+async function rollFolkMovie() {
+  var area  = document.getElementById("folk-result-area");
+  var badge = document.getElementById("folk-count-badge");
+  var btn   = document.getElementById("folk-roll-btn");
+
+  if (folkFinalGirlActive) {
+    if (folkFinalGirlLives <= 0) return;
+    folkFinalGirlLives--;
+    killFolkGhost();
+    if (folkFinalGirlLives <= 0) {
+      btn.disabled = true;
+    }
+  }
+
+  area.innerHTML = '<div class="rolling"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  badge.textContent = "";
+
+  await new Promise(function(r) { setTimeout(r, 800); });
+
+  if (!FOLK_MOVIES.length) {
+    area.innerHTML = '<div class="no-movies">No movies in the list yet.</div>';
+    return;
+  }
+
+  if (!folkShuffleQueue.length) { refillFolkQueue(); }
+  var pick = folkShuffleQueue.pop();
+
+  var parts = [];
+  if (pick.year)     { parts.push(pick.year); }
+  if (pick.runtime)  { parts.push(pick.runtime + " min"); }
+  if (pick.director) { parts.push(pick.director); }
+  if (pick.language && pick.language !== "English") { parts.push(pick.language); }
+  var meta = parts.join(" · ");
+
+  var thumbFile = FOLK_THUMBNAILS[pick.id];
+  var thumbHtml = thumbFile
+    ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
+    : '<div class="movie-thumb-missing">?</div>';
+
+  var remaining = folkShuffleQueue.length;
+  var queueNote = folkFinalGirlActive
+    ? (folkFinalGirlLives > 0 ? folkFinalGirlLives + " pick" + (folkFinalGirlLives !== 1 ? "s" : "") + " remaining" : "No more picks — final girl survived!")
+    : (remaining > 0 ? remaining + " left before any repeats" : "Full rotation complete — reshuffling...");
+
+  var heartHtml = pick.heart
+    ? '<img src="assets/pikura-heart-20751_128.gif" alt="♥" style="width:28px;height:auto;position:absolute;top:0.75rem;left:0.75rem;">'
+    : "";
+
+  area.innerHTML =
+    '<div class="movie-card" style="position:relative;">' +
+      heartHtml +
+      '<div class="movie-card-inner">' +
+        thumbHtml +
+        '<div class="movie-text">' +
+          '<div class="movie-title">' + pick.name + "</div>" +
+          (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
+          (pick.tagline ? '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + pick.tagline + "</div>" : "") +
+          (pick.overview ? '<div class="movie-summary">' + pick.overview + "</div>" : "") +
+          (pick.cast_top5 ? '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (pick.tmdb_rating ? pick.tmdb_rating.toFixed(1) + ' · ' : '') + pick.cast_top5 + "</div>" : "") +
+          renderKeywords(pick.keywords) +
+        "</div>" +
+      "</div>" +
+      '<button class="lock-btn" onclick="lockIn()">✦ We\'re watching this one ✦</button>' +
+    "</div>";
+
+  badge.textContent = queueNote;
+}
+
 /* ---- MARATHON MODE ---- */
 var marathonSlots = [];
 
@@ -1077,6 +1241,9 @@ function buildMarathonPool() {
   var pool = [];
   if (document.getElementById("marathon-theme-alien").checked) {
     pool = pool.concat(ALIEN_MOVIES);
+  }
+  if (document.getElementById("marathon-theme-folk").checked) {
+    pool = pool.concat(FOLK_MOVIES);
   }
   var selectedKeywords = getSelectedKeywords();
   if (selectedKeywords.length > 0) {
@@ -1225,10 +1392,16 @@ function renderMarathonResults() {
       var movies = parseCSV(text);
       ALIEN_MOVIES = [];
       ALIEN_THUMBNAILS = {};
+      FOLK_MOVIES = [];
+      FOLK_THUMBNAILS = {};
       movies.forEach(function(m) {
         if (m.id && m.id.startsWith('ALN')) {
           ALIEN_MOVIES.push(m);
           ALIEN_THUMBNAILS[m.id] = m.id + '.jpeg';
+        }
+        if (m.id && m.id.startsWith('FLK')) {
+          FOLK_MOVIES.push(m);
+          FOLK_THUMBNAILS[m.id] = m.id + '.jpeg';
         }
       });
       buildThemeGrid();
