@@ -781,9 +781,10 @@ function parseCSV(text) {
 }
 
 var THEMES = [
-  { id: "alien",   gif: "assets/placidplace-ufo-21287_128.gif", name: "They're Already Here", desc: "Aliens, and not the friendly kind.",           screen: "alien" },
-  { id: "folk",    gif: "assets/kuzu420-mosquitoes-13105_512.gif", name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"  },
-  { id: "preview", gif: "assets/kuzu420-okay-27234_128.gif",    name: "More coming soon",     desc: "Click for a preview... if you dare!",           screen: "preview" }
+  { id: "alien",    gif: "assets/placidplace-ufo-21287_128.gif",    name: "They're Already Here", desc: "Aliens, and not the friendly kind.",           screen: "alien"    },
+  { id: "folk",     gif: "assets/kuzu420-mosquitoes-13105_512.gif",  name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"     },
+  { id: "marathon", gif: "assets/prawny-film-25972.gif",             name: "Movie Marathon Mode",  desc: "Build a double or triple feature.",             screen: "marathon" },
+  { id: "preview",  gif: "assets/kuzu420-okay-27234_128.gif",        name: "More coming soon",     desc: "Click for a preview... if you dare!",           screen: "preview"  }
 ];
 
 /* ---- AUDIO ---- */
@@ -904,9 +905,10 @@ function buildThemeGrid() {
       '<div class="theme-desc">' + theme.desc + '</div></div>' +
       '<span class="theme-arrow">→</span>';
     card.onclick = function() { showScreen(theme.screen); };
-    if (theme.id === "alien")   { attachHoverSound(card, alienAudio); }
-    if (theme.id === "folk")    { attachHoverSound(card, folkAudio); }
-    if (theme.id === "preview") { attachHoverSound(card, stabAudio); }
+    if (theme.id === "alien")    { attachHoverSound(card, alienAudio); }
+    if (theme.id === "folk")     { attachHoverSound(card, folkAudio); }
+    if (theme.id === "marathon") { attachHoverSound(card, stabAudio); }
+    if (theme.id === "preview")  { attachHoverSound(card, stabAudio); }
     grid.appendChild(card);
   });
 }
