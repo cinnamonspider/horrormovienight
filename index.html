@@ -750,8 +750,14 @@ function buildMarathonPool() {
 }
 
 /* =====================================================
-   KEYWORD FILTER (only keywords with ≥3 movies)
+   KEYWORD FILTER (threshold depends on feature mode)
    ===================================================== */
+function getKeywordThreshold() {
+  var checked = document.querySelector('input[name="feature-mode"]:checked');
+  var count = checked ? parseInt(checked.value) : 2;
+  return count >= 3 ? 4 : 2;
+}
+
 function refreshKeywordFilter() {
   var pool = getSelectedThemeMovies();
   var kwCount = {};
@@ -760,7 +766,8 @@ function refreshKeywordFilter() {
       kwCount[k] = (kwCount[k] || 0) + 1;
     });
   });
-  var qualified = Object.keys(kwCount).filter(function(k) { return kwCount[k] >= 3; }).sort();
+  var threshold = getKeywordThreshold();
+  var qualified = Object.keys(kwCount).filter(function(k) { return kwCount[k] >= threshold; }).sort();
 
   var container = document.getElementById('marathon-keyword-chips');
   var searchTerm = (document.getElementById('kw-search').value || '').toLowerCase().trim();
@@ -774,7 +781,8 @@ function refreshKeywordFilter() {
   container.innerHTML = '';
 
   if (qualified.length === 0) {
-    container.innerHTML = '<span class="kw-empty-note">No keywords appear in 3 or more movies for the selected themes.</span>';
+    var threshold = getKeywordThreshold();
+    container.innerHTML = '<span class="kw-empty-note">No keywords appear in ' + threshold + ' or more movies for the selected themes.</span>';
     document.getElementById('marathon-keyword-section').style.display = 'none';
     return;
   }
@@ -1018,6 +1026,16 @@ function attachHoverSound(el, audio) {
 
 attachHoverSound(document.getElementById('card-horror'), horrorAudio);
 attachHoverSound(document.getElementById('card-comedy'), comedyAudio);
+
+/* =====================================================
+   FEATURE MODE — refresh keyword threshold on change
+   ===================================================== */
+document.querySelectorAll('input[name="feature-mode"]').forEach(function(radio) {
+  radio.addEventListener('change', function() {
+    refreshKeywordFilter();
+    updateKeywordPoolNote();
+  });
+});
 
 /* =====================================================
    KEYWORD SEARCH
