@@ -357,7 +357,6 @@
 <audio id="audio-stab"   src="music/yodguard-healing-magic-5-378667.mp3"></audio>
 <audio id="audio-scream" src="music/u_r7cny11q7r-man-death-scream-186763.mp3"></audio>
 <audio id="audio-folk"   src="music/zuzannajedrys-crunching-leaves-262278.mp3"></audio>
-<audio id="audio-knight" src="music/freesound_community-gate-door-drawbridge-wooden-creaky-opens-closes-hinge-99788.mp3"></audio>
 
 <!-- SELECTION SCREEN -->
 <div id="screen-select" class="screen active">
@@ -430,33 +429,6 @@
   <div class="ghost-lives" id="folk-ghost-lives"></div>
 </div>
 
-<!-- KNIGHT SCREEN -->
-<div id="screen-knight" class="screen">
-  <div class="inner-header">
-    <button class="back-btn" onclick="goBack()">← Back</button>
-    <span class="inner-header-title">Movie Knight</span>
-  </div>
-  <div class="alien-main">
-    <div class="alien-critters">
-      <img src="assets/placidplace-castle-16573.gif" alt="">
-    </div>
-    <p class="alien-eyebrow">The realm awaits</p>
-    <h1 class="alien-title">Movie Knight</h1>
-    <p class="alien-subtitle">Swords, sorcery, and siege warfare.</p>
-
-    <label class="final-girl-toggle">
-      <input type="checkbox" id="knight-final-girl-checkbox">
-      <span class="final-girl-label">Final Girl Mode — 3 picks only</span>
-    </label>
-
-    <button class="roll-btn" id="knight-roll-btn" onclick="rollKnightMovie()">✦ Pick our movie ✦</button>
-    <div class="result-area" id="knight-result-area">
-      <p class="result-empty">Press the button. The kingdom will decide.</p>
-    </div>
-    <p class="count-badge" id="knight-count-badge"></p>
-  </div>
-  <div class="ghost-lives" id="knight-ghost-lives"></div>
-</div>
 
 <!-- LOCK-IN SCREEN -->
 <div id="screen-lockin" class="screen">
@@ -486,8 +458,6 @@ var ALIEN_MOVIES = [];
 var ALIEN_THUMBNAILS = {};
 var FOLK_MOVIES = [];
 var FOLK_THUMBNAILS = {};
-var KNIGHT_MOVIES = [];
-var KNIGHT_THUMBNAILS = {};
 
 /* =====================================================
    CSV PARSER
@@ -574,8 +544,7 @@ function parseCSV(text) {
 
 var THEMES = [
   { id: "alien",    gif: "assets/placidplace-ufo-21287_128.gif",    name: "They're Already Here", desc: "Aliens, and not the friendly kind.",           screen: "alien"    },
-  { id: "folk",     gif: "assets/kuzu420-mosquitoes-13105_512.gif",  name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"     },
-  { id: "knight",   gif: "assets/placidplace-castle-16573.gif",     name: "Movie Knight",         desc: "Swords, sorcery, and siege warfare.",           screen: "knight"   }
+  { id: "folk",     gif: "assets/kuzu420-mosquitoes-13105_512.gif",  name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"     }
 ];
 
 /* ---- AUDIO ---- */
@@ -584,13 +553,11 @@ var alienAudio  = document.getElementById("audio-alien");
 var stabAudio   = document.getElementById("audio-stab");
 var screamAudio = document.getElementById("audio-scream");
 var folkAudio   = document.getElementById("audio-folk");
-var knightAudio = document.getElementById("audio-knight");
 horrorAudio.volume = 0.06;
 alienAudio.volume  = 0.5;
 stabAudio.volume   = 0.8;
 screamAudio.volume = 0.9;
 folkAudio.volume   = 0.6;
-knightAudio.volume = 0.5;
 
 /* ---- EYES OVERLAY ---- */
 var eyes    = document.getElementById("eyes-overlay");
@@ -656,7 +623,6 @@ function buildThemeGrid() {
     card.onclick = function() { showScreen(theme.screen); };
     if (theme.id === "alien")    { attachHoverSound(card, alienAudio); }
     if (theme.id === "folk")     { attachHoverSound(card, folkAudio); }
-    if (theme.id === "knight")   { attachHoverSound(card, knightAudio); }
     if (theme.id === "marathon") { attachHoverSound(card, stabAudio); }
     if (theme.id === "preview")  { attachHoverSound(card, stabAudio); }
     grid.appendChild(card);
@@ -672,9 +638,6 @@ function showScreen(name) {
   }
   if (name === "folk") {
     resetFolkScreen();
-  }
-  if (name === "knight") {
-    resetKnightScreen();
   }
   if (name === "preview") {
     var vid = document.getElementById("preview-video");
@@ -982,127 +945,6 @@ async function rollFolkMovie() {
   badge.textContent = queueNote;
 }
 
-/* ---- KNIGHT ROLL ---- */
-var knightShuffleQueue = [];
-var knightFinalGirlLives = 3;
-var knightFinalGirlActive = false;
-
-function refillKnightQueue() {
-  knightShuffleQueue = KNIGHT_MOVIES.slice();
-  for (var i = knightShuffleQueue.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = knightShuffleQueue[i]; knightShuffleQueue[i] = knightShuffleQueue[j]; knightShuffleQueue[j] = tmp;
-  }
-}
-
-function resetKnightScreen() {
-  document.getElementById("knight-result-area").innerHTML = '<p class="result-empty">Press the button. The kingdom will decide.</p>';
-  document.getElementById("knight-count-badge").textContent = "";
-  document.getElementById("knight-final-girl-checkbox").checked = false;
-  document.getElementById("knight-roll-btn").disabled = false;
-  knightFinalGirlActive = false;
-  knightFinalGirlLives = 3;
-  renderKnightGhosts();
-}
-
-function renderKnightGhosts() {
-  var container = document.getElementById("knight-ghost-lives");
-  container.innerHTML = "";
-  if (!knightFinalGirlActive) return;
-  for (var i = 0; i < knightFinalGirlLives; i++) {
-    var img = document.createElement("img");
-    img.src = "assets/mxj_files-ghost-23282.gif";
-    img.className = "ghost-life";
-    img.alt = "life";
-    container.appendChild(img);
-  }
-}
-
-document.getElementById("knight-final-girl-checkbox").addEventListener("change", function() {
-  knightFinalGirlActive = this.checked;
-  knightFinalGirlLives = 3;
-  document.getElementById("knight-roll-btn").disabled = false;
-  renderKnightGhosts();
-});
-
-function killKnightGhost() {
-  var container = document.getElementById("knight-ghost-lives");
-  var ghosts = container.querySelectorAll(".ghost-life");
-  if (!ghosts.length) return;
-  var last = ghosts[ghosts.length - 1];
-  last.classList.add("dying");
-  screamAudio.currentTime = 0;
-  screamAudio.play().catch(function() {});
-  setTimeout(function() { last.remove(); }, 600);
-}
-
-async function rollKnightMovie() {
-  var area  = document.getElementById("knight-result-area");
-  var badge = document.getElementById("knight-count-badge");
-  var btn   = document.getElementById("knight-roll-btn");
-
-  if (knightFinalGirlActive) {
-    if (knightFinalGirlLives <= 0) return;
-    knightFinalGirlLives--;
-    killKnightGhost();
-    if (knightFinalGirlLives <= 0) {
-      btn.disabled = true;
-    }
-  }
-
-  area.innerHTML = '<div class="rolling"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-  badge.textContent = "";
-
-  await new Promise(function(r) { setTimeout(r, 800); });
-
-  if (!KNIGHT_MOVIES.length) {
-    area.innerHTML = '<div class="no-movies">No movies in the list yet.</div>';
-    return;
-  }
-
-  if (!knightShuffleQueue.length) { refillKnightQueue(); }
-  var pick = knightShuffleQueue.pop();
-
-  var parts = [];
-  if (pick.year)     { parts.push(pick.year); }
-  if (pick.runtime)  { parts.push(pick.runtime + " min"); }
-  if (pick.director) { parts.push(pick.director); }
-  if (pick.language && pick.language !== "English") { parts.push(pick.language); }
-  var meta = parts.join(" · ");
-
-  var thumbFile = KNIGHT_THUMBNAILS[pick.id];
-  var thumbHtml = thumbFile
-    ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
-    : '<div class="movie-thumb-missing">?</div>';
-
-  var remaining = knightShuffleQueue.length;
-  var queueNote = knightFinalGirlActive
-    ? (knightFinalGirlLives > 0 ? knightFinalGirlLives + " pick" + (knightFinalGirlLives !== 1 ? "s" : "") + " remaining" : "No more picks — final girl survived!")
-    : (remaining > 0 ? remaining + " left before any repeats" : "Full rotation complete — reshuffling...");
-
-  var heartHtml = pick.heart
-    ? '<img src="assets/pikura-heart-20751_128.gif" alt="♥" style="width:28px;height:auto;position:absolute;top:0.75rem;left:0.75rem;">'
-    : "";
-
-  area.innerHTML =
-    '<div class="movie-card" style="position:relative;">' +
-      heartHtml +
-      '<div class="movie-card-inner">' +
-        thumbHtml +
-        '<div class="movie-text">' +
-          '<div class="movie-title">' + pick.name + "</div>" +
-          (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
-          (pick.tagline ? '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + pick.tagline + "</div>" : "") +
-          (pick.overview ? '<div class="movie-summary">' + pick.overview + "</div>" : "") +
-          (pick.cast_top5 ? '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (pick.tmdb_rating ? pick.tmdb_rating.toFixed(1) + ' · ' : '') + pick.cast_top5 + "</div>" : "") +
-          renderKeywords(pick.keywords) +
-        "</div>" +
-      "</div>" +
-      '<button class="lock-btn" onclick="lockIn()">✦ We\'re watching this one ✦</button>' +
-    "</div>";
-
-  badge.textContent = queueNote;
-}
 
 (function init() {
   fetch('./movies_enriched.csv')
@@ -1113,8 +955,6 @@ async function rollKnightMovie() {
       ALIEN_THUMBNAILS = {};
       FOLK_MOVIES = [];
       FOLK_THUMBNAILS = {};
-      KNIGHT_MOVIES = [];
-      KNIGHT_THUMBNAILS = {};
       movies.forEach(function(m) {
         var thumbFile = m.poster_file || (m.id + '.jpeg');
         if (m.id && m.id.startsWith('ALN')) {
@@ -1124,10 +964,6 @@ async function rollKnightMovie() {
         if (m.id && m.id.startsWith('FLK')) {
           FOLK_MOVIES.push(m);
           FOLK_THUMBNAILS[m.id] = thumbFile;
-        }
-        if (m.id && m.id.startsWith('KNI')) {
-          KNIGHT_MOVIES.push(m);
-          KNIGHT_THUMBNAILS[m.id] = thumbFile;
         }
       });
       buildThemeGrid();
