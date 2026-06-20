@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Knight</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --knight-bg: #475c6c;
+    --knight-accent: #cd8b62;
+    --knight-cream: #f7efd3;
+    --knight-gold: #eed7a1;
+    --knight-muted: #8a8583;
+  }
+
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--knight-bg);
+    color: var(--knight-cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .inner-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(205, 139, 98, 0.25);
+    display: flex; align-items: center; gap: 1rem;
+    background: rgba(0,0,0,0.2); flex-shrink: 0;
+  }
+  .back-btn {
+    background: none; border: 1px solid rgba(238, 215, 161, 0.3);
+    color: var(--knight-gold); font-family: 'Cinzel', serif;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    padding: 0.4rem 0.85rem; cursor: pointer; border-radius: 2px;
+    text-transform: uppercase; transition: background 0.2s, border-color 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .back-btn:hover { background: rgba(238, 215, 161, 0.08); border-color: rgba(238, 215, 161, 0.6); }
+  .inner-header-title {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.3em; color: rgba(238, 215, 161, 0.4);
+    text-transform: uppercase; margin-left: auto;
+  }
+
+  /* MAIN */
+  .knight-main {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; text-align: center;
+  }
+  .knight-critters {
+    display: flex; justify-content: center; gap: 1rem;
+    pointer-events: none; margin-bottom: 1.5rem;
+  }
+  .knight-critters img { width: 96px; height: auto; display: block; }
+  .knight-eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.7rem;
+    letter-spacing: 0.3em; color: var(--knight-muted);
+    text-transform: uppercase; margin-bottom: 0.75rem;
+  }
+  .knight-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 900;
+    color: var(--knight-gold); line-height: 1; margin-bottom: 0.5rem;
+    letter-spacing: 0.05em; text-shadow: 0 0 40px rgba(238, 215, 161, 0.2);
+  }
+  .knight-subtitle { font-size: 1rem; color: var(--knight-muted); font-style: italic; margin-bottom: 2rem; }
+
+  /* FINAL GIRL MODE */
+  .final-girl-toggle {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 2rem; cursor: pointer;
+  }
+  .final-girl-toggle input[type="checkbox"] {
+    accent-color: var(--knight-accent);
+    width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;
+  }
+  .final-girl-label {
+    font-family: 'Cinzel', serif; font-size: 0.72rem;
+    letter-spacing: 0.12em; color: var(--knight-muted);
+    text-transform: uppercase; user-select: none;
+  }
+
+  .roll-btn {
+    background: none; border: 1px solid var(--knight-accent);
+    color: var(--knight-gold); font-family: 'Cinzel', serif;
+    font-size: 0.85rem; letter-spacing: 0.2em;
+    padding: 1rem 2.5rem; cursor: pointer; text-transform: uppercase;
+    border-radius: 2px; transition: background 0.2s, border-color 0.2s; margin-bottom: 3rem;
+  }
+  .roll-btn:hover { background: rgba(205, 139, 98, 0.12); border-color: var(--knight-gold); }
+  .roll-btn:active { transform: scale(0.98); }
+  .roll-btn:disabled {
+    opacity: 0.3; cursor: not-allowed; border-color: rgba(205, 139, 98, 0.2);
+    color: rgba(238, 215, 161, 0.3);
+  }
+
+  .result-area {
+    width: 100%; max-width: 580px; min-height: 220px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .result-empty { color: rgba(238, 215, 161, 0.25); font-style: italic; font-size: 0.95rem; }
+
+  .movie-card {
+    width: 100%; background: rgba(205, 139, 98, 0.07);
+    border: 1px solid rgba(205, 139, 98, 0.25); border-radius: 4px;
+    padding: 2rem; text-align: left;
+    animation: fadeIn 0.4s ease; position: relative; overflow: hidden;
+  }
+  .movie-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 1px; background: var(--knight-gold); opacity: 0.4;
+  }
+  .movie-card-inner { display: flex; gap: 1.5rem; align-items: flex-start; }
+  .movie-thumb {
+    width: 90px; flex-shrink: 0; border-radius: 2px;
+    border: 1px solid rgba(205, 139, 98, 0.2);
+    object-fit: cover; aspect-ratio: 2/3; background: rgba(205, 139, 98, 0.1);
+  }
+  .movie-thumb-missing {
+    width: 90px; flex-shrink: 0; aspect-ratio: 2/3;
+    border: 1px dashed rgba(238, 215, 161, 0.15); border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(238, 215, 161, 0.15); font-size: 1.5rem;
+  }
+  .movie-text { flex: 1; min-width: 0; }
+  .movie-id {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.2em; color: var(--knight-accent);
+    text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .movie-title {
+    font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 700;
+    color: var(--knight-gold); margin-bottom: 0.35rem; line-height: 1.2;
+  }
+  .movie-meta { font-size: 0.85rem; color: var(--knight-muted); margin-bottom: 1rem; font-style: italic; }
+  .movie-tagline { font-style: italic; color: var(--knight-muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+  .movie-summary {
+    font-size: 1rem; color: rgba(247, 239, 211, 0.7); line-height: 1.65;
+    border-top: 1px solid rgba(205, 139, 98, 0.15); padding-top: 1rem;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .rolling { display: flex; gap: 6px; align-items: center; justify-content: center; min-height: 100px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 1s ease-in-out infinite; }
+  .dot:nth-child(1) { background: var(--knight-gold); }
+  .dot:nth-child(2) { animation-delay: 0.2s; background: var(--knight-accent); }
+  .dot:nth-child(3) { animation-delay: 0.4s; background: var(--knight-muted); }
+  @keyframes pulse { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+  .count-badge {
+    margin-top: 2rem; font-size: 0.75rem; color: rgba(238, 215, 161, 0.3);
+    font-style: italic; font-family: 'Cinzel', serif; letter-spacing: 0.1em;
+  }
+  .no-movies {
+    color: var(--knight-muted); font-style: italic; font-size: 0.95rem;
+    padding: 1.5rem; border: 1px dashed rgba(205, 139, 98, 0.2);
+    border-radius: 4px; text-align: center; line-height: 1.8;
+  }
+
+  /* GHOST LIVES */
+  .ghost-lives {
+    position: absolute; bottom: 1rem; right: 1rem;
+    display: flex; gap: 0.4rem; align-items: flex-end;
+    pointer-events: none; z-index: 10;
+  }
+  .ghost-life {
+    width: 48px; height: auto; display: block;
+    transition: opacity 0.1s;
+  }
+  .ghost-life.dying {
+    animation: ghostFall 0.6s ease-in forwards;
+  }
+  @keyframes ghostFall {
+    0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(60px) rotate(20deg); }
+  }
+
+  .lock-btn {
+    display: block; width: 100%; margin-top: 1.25rem;
+    background: none; border: 1px solid rgba(205, 139, 98, 0.5);
+    color: var(--knight-cream); font-family: 'Cinzel', serif;
+    font-size: 0.75rem; letter-spacing: 0.2em; padding: 0.75rem;
+    cursor: pointer; text-transform: uppercase; border-radius: 2px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .lock-btn:hover { background: rgba(205, 139, 98, 0.15); border-color: var(--knight-accent); }
+
+  /* LOCK-IN SCREEN */
+  #screen-lockin {
+    background: #2a3a45;
+    align-items: center; justify-content: center;
+    flex-direction: column; text-align: center; padding: 2rem;
+    position: relative;
+  }
+  .lockin-main {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2.5rem; max-width: 480px;
+  }
+  .lockin-reel { width: 200px; height: auto; display: block; }
+  .lockin-message {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 700;
+    color: var(--knight-cream); line-height: 1.4; letter-spacing: 0.04em;
+  }
+  .lockin-back {
+    position: absolute; bottom: 2rem; left: 2rem;
+    border-color: rgba(247, 239, 211, 0.2);
+    color: rgba(247, 239, 211, 0.4);
+  }
+  .lockin-back:hover {
+    background: rgba(247, 239, 211, 0.05);
+    border-color: rgba(247, 239, 211, 0.4);
+    color: var(--knight-cream);
+  }
+
+  /* KEYWORD CHIPS */
+  .keyword-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.6rem; }
+  .keyword-chip {
+    font-size: 0.72rem; font-family: 'Crimson Text', serif;
+    background: rgba(205, 139, 98, 0.15); border: 1px solid rgba(205, 139, 98, 0.3);
+    color: var(--knight-cream); padding: 0.15rem 0.5rem; border-radius: 2px;
+  }
+  .keyword-more {
+    font-size: 0.72rem; font-family: 'Crimson Text', serif; font-style: italic;
+    color: var(--knight-muted); cursor: default; padding: 0.15rem 0.3rem;
+    position: relative;
+  }
+  .keyword-more-popup {
+    position: absolute; bottom: calc(100% + 6px); left: 0;
+    background: #2a3a45; border: 1px solid rgba(205, 139, 98, 0.4);
+    padding: 0.5rem; z-index: 100; min-width: 200px; max-width: 320px;
+    flex-wrap: wrap; gap: 0.3rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    display: flex;
+  }
+  .keyword-more:hover .keyword-more-popup {
+    opacity: 1; pointer-events: auto;
+  }
+
+</style>
+</head>
+<body>
+
+<audio id="audio-bg" src="music/tunetank-medieval-waltz-music-412748.mp3" loop></audio>
+<audio id="audio-scream" src="music/u_r7cny11q7r-man-death-scream-186763.mp3"></audio>
+
+<!-- KNIGHT SCREEN -->
+<div id="screen-knight" class="screen active">
+  <div class="inner-header">
+    <a class="back-btn" href="index.html">← Back</a>
+    <span class="inner-header-title">Movie Knight</span>
+  </div>
+  <div class="knight-main">
+    <div class="knight-critters">
+      <img src="assets/placidplace-castle-16573.gif" alt="">
+    </div>
+    <p class="knight-eyebrow">The realm awaits</p>
+    <h1 class="knight-title">Movie Knight</h1>
+    <p class="knight-subtitle">Swords, sorcery, and siege warfare.</p>
+
+    <label class="final-girl-toggle">
+      <input type="checkbox" id="knight-final-girl-checkbox">
+      <span class="final-girl-label">Final Girl Mode — 3 picks only</span>
+    </label>
+
+    <button class="roll-btn" id="knight-roll-btn" onclick="rollKnightMovie()">✦ Pick our movie ✦</button>
+    <div class="result-area" id="knight-result-area">
+      <p class="result-empty">Press the button. The kingdom will decide.</p>
+    </div>
+    <p class="count-badge" id="knight-count-badge"></p>
+  </div>
+  <div class="ghost-lives" id="knight-ghost-lives"></div>
+</div>
+
+<!-- LOCK-IN SCREEN -->
+<div id="screen-lockin" class="screen">
+  <div class="lockin-main">
+    <img src="" id="lockin-reel" alt="" class="lockin-reel">
+    <p class="lockin-message" id="lockin-message"></p>
+  </div>
+  <a class="back-btn lockin-back" href="knight.html">← Choose again</a>
+</div>
+
+<script>
+var KNIGHT_MOVIES = [];
+var KNIGHT_THUMBNAILS = {};
+
+/* CSV PARSER */
+function parseCSVLine(line) {
+  var fields = [], i = 0;
+  while (i < line.length) {
+    if (line[i] === '"') {
+      i++;
+      var val = '';
+      while (i < line.length) {
+        if (line[i] === '"') {
+          if (line[i + 1] === '"') { val += '"'; i += 2; }
+          else { i++; break; }
+        } else { val += line[i]; i++; }
+      }
+      fields.push(val);
+      if (line[i] === ',') i++;
+    } else {
+      var start = i;
+      while (i < line.length && line[i] !== ',') i++;
+      fields.push(line.slice(start, i));
+      if (line[i] === ',') i++;
+    }
+  }
+  return fields;
+}
+
+function parseCSV(text) {
+  var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  var headers = parseCSVLine(lines[0]);
+  var movies = [];
+  for (var i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    var vals = parseCSVLine(lines[i]);
+    var r = {};
+    for (var j = 0; j < headers.length; j++) r[headers[j]] = vals[j] !== undefined ? vals[j] : '';
+    var lang = r['original_language'];
+    if (lang === 'en') lang = 'English';
+    else if (lang === 'ru') lang = 'Russian';
+    movies.push({
+      id:          r['id'],
+      name:        r['name'],
+      runtime:     parseInt(r['runtime_min']) || 0,
+      year:        parseInt(r['release_year']) || 0,
+      director:    r['director'],
+      language:    lang,
+      heart:       r['heart'] === 'Y',
+      overview:    r['overview'],
+      tagline:     r['tagline'],
+      genres:      r['genres'],
+      cast_top5:   r['cast_top5'],
+      tmdb_rating: parseFloat(r['tmdb_rating']) || 0,
+      keywords:    r['keywords'] ? r['keywords'].split(', ').filter(function(k) { return k; }) : [],
+      poster_file: r['poster_file']
+    });
+  }
+  return movies;
+}
+
+/* KEYWORD CHIPS */
+function renderKeywords(keywords) {
+  if (!keywords || !keywords.length) return "";
+  var visible = keywords.slice(0, 5);
+  var hidden = keywords.slice(5);
+  var html = '<div class="keyword-chips">';
+  visible.forEach(function(k) {
+    html += '<span class="keyword-chip">' + escHtml(k) + '</span>';
+  });
+  if (hidden.length) {
+    html += '<span class="keyword-more">+ ' + hidden.length + ' more';
+    html += '<span class="keyword-more-popup">';
+    hidden.forEach(function(k) {
+      html += '<span class="keyword-chip">' + escHtml(k) + '</span>';
+    });
+    html += '</span></span>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* SCREEN SWITCHING */
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach(function(s) { s.classList.remove("active"); });
+  document.getElementById("screen-" + name).classList.add("active");
+}
+
+/* LOCK-IN */
+var LOCKIN_MESSAGES = [
+  "The realm has spoken.",
+  "Your quest begins tonight.",
+  "The kingdom has chosen wisely.",
+  "Steel yourself. The adventure awaits.",
+  "Tonight, we ride.",
+  "The banners are raised. No turning back.",
+  "A worthy tale for worthy knights.",
+  "The court has made its decree.",
+  "Draw your sword. Press play.",
+  "By royal decree, this is the one."
+];
+
+var OUTRO_GIFS = [
+  "outros/dezyne_3d-skeleton-25956_512.gif",
+  "outros/ekkant-bat-23695_512.gif",
+  "outros/havingfunandsharing-jack-o-lantern-15778_512.gif",
+  "outros/kuzu420-dancing-15139_512.gif",
+  "outros/kuzu420-grey-16322_512.gif",
+  "outros/manegpx-cuckoo-clock-25728_256.gif",
+  "outros/mxj_files-eye-22882_512.gif",
+  "outros/placidplace-halloween-8548_512.gif",
+  "outros/placidplace-horror-10710_512.gif"
+];
+
+function lockIn() {
+  var msg = LOCKIN_MESSAGES[Math.floor(Math.random() * LOCKIN_MESSAGES.length)];
+  var gif = OUTRO_GIFS[Math.floor(Math.random() * OUTRO_GIFS.length)];
+  document.getElementById("lockin-message").textContent = msg;
+  document.getElementById("lockin-reel").src = gif;
+  showScreen("lockin");
+}
+
+/* SHUFFLE QUEUE */
+var knightShuffleQueue = [];
+var knightFinalGirlLives = 3;
+var knightFinalGirlActive = false;
+
+function refillKnightQueue() {
+  knightShuffleQueue = KNIGHT_MOVIES.slice();
+  for (var i = knightShuffleQueue.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = knightShuffleQueue[i]; knightShuffleQueue[i] = knightShuffleQueue[j]; knightShuffleQueue[j] = tmp;
+  }
+}
+
+function resetKnightScreen() {
+  document.getElementById("knight-result-area").innerHTML = '<p class="result-empty">Press the button. The kingdom will decide.</p>';
+  document.getElementById("knight-count-badge").textContent = "";
+  document.getElementById("knight-final-girl-checkbox").checked = false;
+  document.getElementById("knight-roll-btn").disabled = false;
+  knightFinalGirlActive = false;
+  knightFinalGirlLives = 3;
+  renderKnightGhosts();
+}
+
+function renderKnightGhosts() {
+  var container = document.getElementById("knight-ghost-lives");
+  container.innerHTML = "";
+  if (!knightFinalGirlActive) return;
+  for (var i = 0; i < knightFinalGirlLives; i++) {
+    var img = document.createElement("img");
+    img.src = "assets/mxj_files-ghost-23282.gif";
+    img.className = "ghost-life";
+    img.alt = "life";
+    container.appendChild(img);
+  }
+}
+
+document.getElementById("knight-final-girl-checkbox").addEventListener("change", function() {
+  knightFinalGirlActive = this.checked;
+  knightFinalGirlLives = 3;
+  document.getElementById("knight-roll-btn").disabled = false;
+  renderKnightGhosts();
+});
+
+function killKnightGhost() {
+  var container = document.getElementById("knight-ghost-lives");
+  var ghosts = container.querySelectorAll(".ghost-life");
+  if (!ghosts.length) return;
+  var last = ghosts[ghosts.length - 1];
+  last.classList.add("dying");
+  var screamAudio = document.getElementById("audio-scream");
+  screamAudio.currentTime = 0;
+  screamAudio.play().catch(function() {});
+  setTimeout(function() { last.remove(); }, 600);
+}
+
+async function rollKnightMovie() {
+  var area  = document.getElementById("knight-result-area");
+  var badge = document.getElementById("knight-count-badge");
+  var btn   = document.getElementById("knight-roll-btn");
+
+  if (knightFinalGirlActive) {
+    if (knightFinalGirlLives <= 0) return;
+    knightFinalGirlLives--;
+    killKnightGhost();
+    if (knightFinalGirlLives <= 0) {
+      btn.disabled = true;
+    }
+  }
+
+  area.innerHTML = '<div class="rolling"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  badge.textContent = "";
+
+  await new Promise(function(r) { setTimeout(r, 800); });
+
+  if (!KNIGHT_MOVIES.length) {
+    area.innerHTML = '<div class="no-movies">No movies in the list yet.</div>';
+    return;
+  }
+
+  if (!knightShuffleQueue.length) { refillKnightQueue(); }
+  var pick = knightShuffleQueue.pop();
+
+  var parts = [];
+  if (pick.year)     { parts.push(pick.year); }
+  if (pick.runtime)  { parts.push(pick.runtime + " min"); }
+  if (pick.director) { parts.push(pick.director); }
+  if (pick.language && pick.language !== "English") { parts.push(pick.language); }
+  var meta = parts.join(" · ");
+
+  var thumbFile = KNIGHT_THUMBNAILS[pick.id];
+  var thumbHtml = thumbFile
+    ? '<img class="movie-thumb" src="thumbnails/' + escHtml(thumbFile) + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
+    : '<div class="movie-thumb-missing">?</div>';
+
+  var remaining = knightShuffleQueue.length;
+  var queueNote = knightFinalGirlActive
+    ? (knightFinalGirlLives > 0 ? knightFinalGirlLives + " pick" + (knightFinalGirlLives !== 1 ? "s" : "") + " remaining" : "No more picks — final girl survived!")
+    : (remaining > 0 ? remaining + " left before any repeats" : "Full rotation complete — reshuffling...");
+
+  var heartHtml = pick.heart
+    ? '<img src="assets/pikura-heart-20751_128.gif" alt="♥" style="width:28px;height:auto;position:absolute;top:0.75rem;left:0.75rem;">'
+    : "";
+
+  area.innerHTML =
+    '<div class="movie-card" style="position:relative;">' +
+      heartHtml +
+      '<div class="movie-card-inner">' +
+        thumbHtml +
+        '<div class="movie-text">' +
+          '<div class="movie-title">' + escHtml(pick.name) + "</div>" +
+          (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
+          (pick.tagline ? '<div class="movie-tagline">' + escHtml(pick.tagline) + "</div>" : "") +
+          (pick.overview ? '<div class="movie-summary">' + escHtml(pick.overview) + "</div>" : "") +
+          (pick.cast_top5 ? '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (pick.tmdb_rating ? pick.tmdb_rating.toFixed(1) + ' · ' : '') + escHtml(pick.cast_top5) + "</div>" : "") +
+          renderKeywords(pick.keywords) +
+        "</div>" +
+      "</div>" +
+      '<button class="lock-btn" onclick="lockIn()">✦ We\'re watching this one ✦</button>' +
+    "</div>";
+
+  badge.textContent = queueNote;
+}
+
+/* INIT */
+(function init() {
+  var bgAudio = document.getElementById("audio-bg");
+  bgAudio.volume = 0.15;
+  document.addEventListener("click", function() {
+    if (bgAudio.paused) { bgAudio.play().catch(function() {}); }
+  }, { once: true });
+
+  fetch('./movies_enriched.csv')
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      var movies = parseCSV(text);
+      movies.forEach(function(m) {
+        if (m.id && m.id.startsWith('KNI')) {
+          KNIGHT_MOVIES.push(m);
+          KNIGHT_THUMBNAILS[m.id] = m.poster_file || (m.id + '.jpeg');
+        }
+      });
+    })
+    .catch(function(err) {
+      document.body.innerHTML = '<div style="color:red;padding:2rem;font-family:monospace">Failed to load movie data: ' + err.message + '</div>';
+    });
+})();
+</script>
+</body>
+</html>
