@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Action & Adventure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --aa-bg: #1a0a00;
+    --aa-red: #c9362b;
+    --aa-orange: #f45536;
+    --aa-yellow: #ffd34f;
+    --aa-cream: #f3f6f4;
+    --aa-black: #000000;
+  }
+
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--aa-black);
+    color: var(--aa-cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* SELECTION SCREEN */
+  #screen-select {
+    background: var(--aa-black);
+    align-items: center; justify-content: center;
+    text-align: center; position: relative;
+  }
+  .select-inner {
+    max-width: 560px; width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem; position: relative; z-index: 2;
+  }
+  .eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.75rem;
+    letter-spacing: 0.25em; color: var(--aa-orange);
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .select-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900;
+    color: var(--aa-yellow); line-height: 1.1; margin-bottom: 0.5rem;
+    text-shadow: 0 0 40px rgba(255, 211, 79, 0.2);
+  }
+  .select-subtitle {
+    font-size: 1.15rem; color: var(--aa-orange);
+    font-style: italic; margin-bottom: 2rem;
+  }
+  .treasure-gif {
+    width: 120px; height: auto; display: block;
+    margin: 0 auto 2rem;
+  }
+  .theme-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; width: 100%; margin-bottom: 2rem; }
+  .theme-card {
+    background: rgba(244, 85, 54, 0.06);
+    border: 1px solid rgba(244, 85, 54, 0.3); border-radius: 4px;
+    padding: 1.5rem 1.75rem; cursor: pointer; text-align: left;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex; align-items: center; gap: 1.25rem;
+    position: relative; overflow: hidden;
+    text-decoration: none; color: inherit;
+  }
+  .theme-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--aa-orange); opacity: 0; transition: opacity 0.2s;
+  }
+  .theme-card:hover { background: rgba(244, 85, 54, 0.14); border-color: rgba(255, 211, 79, 0.6); }
+  .theme-card:hover::before { opacity: 1; }
+  .theme-gif {
+    width: auto; height: 100%; max-height: 80px;
+    object-fit: contain; flex-shrink: 0;
+    opacity: 0; transition: opacity 0.3s ease; align-self: stretch;
+  }
+  .theme-card:hover .theme-gif { opacity: 1; }
+  .theme-name { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--aa-yellow); margin-bottom: 0.2rem; }
+  .theme-desc { font-size: 0.9rem; color: var(--aa-orange); font-style: italic; }
+  .theme-arrow { margin-left: auto; color: var(--aa-yellow); font-size: 1.25rem; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+  .theme-card:hover .theme-arrow { opacity: 1; }
+  .divider { border: none; border-top: 1px solid rgba(244, 85, 54, 0.2); margin: 2rem 0; width: 100%; }
+  .footer-note { font-size: 0.8rem; color: rgba(243, 246, 244, 0.3); font-style: italic; }
+</style>
+</head>
+<body>
+
+<audio id="audio-bg" src="music/freesound_community-chest-opening-87569.mp3"></audio>
+<audio id="audio-knight-hover" src="music/freesound_community-gate-door-drawbridge-wooden-creaky-opens-closes-hinge-99788.mp3"></audio>
+
+<div id="screen-select" class="screen active">
+  <div class="select-inner">
+    <p class="eyebrow">Choose your quest</p>
+    <h1 class="select-title">Action & Adventure</h1>
+    <p class="select-subtitle">Fortune favors the bold.</p>
+    <img class="treasure-gif" src="assets/havingfunandsharing-treasure-chest-20630_512.gif" alt="">
+    <div class="theme-grid">
+      <a class="theme-card" href="knight.html" id="card-knight">
+        <img src="assets/placidplace-castle-16573.gif" class="theme-gif" alt="">
+        <div>
+          <div class="theme-name">Movie Knight</div>
+          <div class="theme-desc">Swords, sorcery, and siege warfare.</div>
+        </div>
+        <span class="theme-arrow">→</span>
+      </a>
+    </div>
+    <hr class="divider">
+    <p class="footer-note">A movie will be chosen for you. Resistance is futile.</p>
+    <p style="margin-top:1.5rem;"><a href="index.html" style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(243,246,244,0.25);text-decoration:none;" onmouseover="this.style.color='rgba(243,246,244,0.6)'" onmouseout="this.style.color='rgba(243,246,244,0.25)'">← All Genres</a></p>
+  </div>
+</div>
+
+<script>
+var bgAudio = document.getElementById("audio-bg");
+bgAudio.volume = 0.4;
+document.addEventListener("click", function() {
+  if (bgAudio.paused) { bgAudio.play().catch(function() {}); }
+}, { once: true });
+
+function attachHoverSound(el, audio) {
+  el.addEventListener("mouseenter", function() { audio.currentTime = 0; audio.play().catch(function() {}); });
+  el.addEventListener("mouseleave", function() { audio.pause(); audio.currentTime = 0; });
+}
+
+var knightAudio = document.getElementById("audio-knight-hover");
+knightAudio.volume = 0.5;
+attachHoverSound(document.getElementById("card-knight"), knightAudio);
+</script>
+</body>
+</html>

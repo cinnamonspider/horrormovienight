@@ -204,12 +204,12 @@
         <div class="genre-desc">Laugh until it hurts.</div>
         <div class="genre-arrow">→</div>
       </a>
-      <a class="genre-card" href="knight.html" id="card-knight">
+      <a class="genre-card" href="actionadventure.html" id="card-adventure">
         <div class="genre-gif-wrap">
-          <img class="genre-gif" src="assets/placidplace-castle-16573.gif" alt="">
+          <img class="genre-gif" src="assets/havingfunandsharing-treasure-chest-20630_512.gif" alt="">
         </div>
-        <div class="genre-name">Movie Knight</div>
-        <div class="genre-desc">Swords, sorcery, and siege warfare.</div>
+        <div class="genre-name">Action & Adventure</div>
+        <div class="genre-desc">Fortune favors the bold.</div>
         <div class="genre-arrow">→</div>
       </a>
     </div>
@@ -238,7 +238,7 @@
 <audio id="audio-comedy-hover" src="music/artificiallyinspired-90s-sitcom-laugh-track-353985.mp3"></audio>
 <audio id="audio-static" src="music/dragon-studio-radio-static-323621.mp3" loop></audio>
 <audio id="audio-marathon-hover" src="music/freesound_community-watch-ticking-69213.mp3" loop></audio>
-<audio id="audio-knight-hover" src="music/freesound_community-gate-door-drawbridge-wooden-creaky-opens-closes-hinge-99788.mp3"></audio>
+<audio id="audio-adventure-hover" src="music/freesound_community-chest-opening-87569.mp3"></audio>
 
 <script>
 /* =====================================================
@@ -280,9 +280,9 @@ function attachHoverSound(el, audio) {
 attachHoverSound(document.getElementById('card-horror'), horrorAudio);
 attachHoverSound(document.getElementById('card-comedy'), comedyAudio);
 
-var knightAudio = document.getElementById('audio-knight-hover');
-knightAudio.volume = 0.5;
-attachHoverSound(document.getElementById('card-knight'), knightAudio);
+var adventureAudio = document.getElementById('audio-adventure-hover');
+adventureAudio.volume = 0.5;
+attachHoverSound(document.getElementById('card-adventure'), adventureAudio);
 
 var marathonAudio = document.getElementById('audio-marathon-hover');
 marathonAudio.volume = 0.4;
