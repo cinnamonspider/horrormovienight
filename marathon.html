@@ -280,6 +280,7 @@
   .marathon-total-label { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--mauve); text-transform: uppercase; }
   .marathon-total-value { font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: var(--cream); }
   .marathon-target-note { font-size: 0.85rem; color: var(--mauve); font-style: italic; width: 100%; }
+  .marathon-queue-note { text-align: center; font-size: 0.85rem; color: var(--mauve); font-style: italic; margin-bottom: 0.5rem; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 </style>
@@ -632,9 +633,28 @@ function updateKeywordPoolNote() {
    MARATHON LOGIC
    ===================================================== */
 var marathonSlots = [];
+var marathonShuffleQueue = [];
+var marathonQueuePoolKey = '';
+
+function buildPoolKey(pool) {
+  return pool.map(function(m) { return m.id; }).sort().join(',');
+}
+
+function refillMarathonQueue(pool) {
+  marathonShuffleQueue = pool.slice();
+  for (var i = marathonShuffleQueue.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = marathonShuffleQueue[i];
+    marathonShuffleQueue[i] = marathonShuffleQueue[j];
+    marathonShuffleQueue[j] = tmp;
+  }
+  marathonQueuePoolKey = buildPoolKey(pool);
+}
 
 function resetMarathon() {
   marathonSlots = [];
+  marathonShuffleQueue = [];
+  marathonQueuePoolKey = '';
   document.getElementById('marathon-setup').style.display = 'block';
   document.getElementById('marathon-results').style.display = 'none';
   document.getElementById('marathon-results').innerHTML = '';
@@ -646,11 +666,25 @@ function getFeatureCount() {
 }
 
 function pickFromPool(pool, exclude) {
-  var available = pool.filter(function(m) {
+  var poolKey = buildPoolKey(pool);
+  if (poolKey !== marathonQueuePoolKey || !marathonShuffleQueue.length) {
+    refillMarathonQueue(pool);
+  }
+  // Remove excluded movies from queue positions (they're already in the lineup)
+  var filtered = marathonShuffleQueue.filter(function(m) {
     return !exclude.some(function(e) { return e && e.id === m.id; });
   });
-  if (!available.length) available = pool.slice();
-  return available[Math.floor(Math.random() * available.length)];
+  if (!filtered.length) {
+    refillMarathonQueue(pool);
+    filtered = marathonShuffleQueue.filter(function(m) {
+      return !exclude.some(function(e) { return e && e.id === m.id; });
+    });
+    if (!filtered.length) filtered = pool.slice();
+  }
+  var pick = filtered[0];
+  var idx = marathonShuffleQueue.findIndex(function(m) { return m.id === pick.id; });
+  if (idx !== -1) marathonShuffleQueue.splice(idx, 1);
+  return pick;
 }
 
 function generateMarathon() {
@@ -765,6 +799,12 @@ function renderMarathonResults() {
   var desiredH = parseInt(document.getElementById('marathon-hours').value) || 0;
   var desiredM = parseInt(document.getElementById('marathon-minutes').value) || 0;
   var desired = desiredH * 60 + desiredM;
+
+  var queueRemaining = marathonShuffleQueue.length;
+  var queueNote = queueRemaining > 0
+    ? queueRemaining + ' left before any repeats'
+    : 'Full rotation complete — reshuffling on next pick...';
+  html += '<div class="marathon-queue-note">' + queueNote + '</div>';
 
   html += '<div class="marathon-total-bar">';
   html += '<span class="marathon-total-label">Combined Runtime</span>';
