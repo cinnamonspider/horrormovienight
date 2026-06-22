@@ -169,9 +169,10 @@
 
   /* GHOST LIVES */
   .castle-decor {
-    position: fixed; bottom: -2rem; right: -8vw;
-    width: clamp(400px, 45vw, 700px); height: auto;
+    position: fixed; bottom: 0; left: 0;
+    width: 100vw; height: auto;
     pointer-events: none; z-index: 0; opacity: 0.18;
+    transform: scaleX(-1);
   }
 
   .ghost-lives {
