@@ -258,10 +258,10 @@
     100% { opacity: 0; transform: translateY(60px) rotate(20deg); }
   }
 
+  .card-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
   .lock-btn {
     display: block;
-    width: 100%;
-    margin-top: 1.25rem;
+    flex: 1;
     background: none;
     border: 1px solid rgba(150, 2, 0, 0.5);
     color: var(--horror-cream);
@@ -275,6 +275,38 @@
     transition: background 0.2s, border-color 0.2s;
   }
   .lock-btn:hover { background: rgba(150, 2, 0, 0.15); border-color: var(--horror-red); }
+  .freeze-btn {
+    display: block;
+    background: none;
+    border: 1px solid rgba(57, 255, 90, 0.25);
+    color: var(--alien-green-mid);
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .freeze-btn:hover { background: rgba(57, 255, 90, 0.07); border-color: var(--alien-green-bright); }
+
+  .frozen-area { margin-top: 1.5rem; }
+  .frozen-label {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(57, 255, 90, 0.3); margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .frozen-label::before { content: '❄'; }
+  .unfreeze-btn {
+    background: none; border: none; color: rgba(150, 2, 0, 0.5);
+    font-family: 'Cinzel', serif; font-size: 0.6rem; cursor: pointer;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-left: auto;
+  }
+  .unfreeze-btn:hover { color: var(--horror-red); }
+  .frozen-area .movie-card { opacity: 0.7; border-color: rgba(57, 255, 90, 0.1); }
+  .frozen-area .movie-card:hover { opacity: 1; }
 
   /* LOCK-IN SCREEN */
   #screen-lockin {
@@ -397,6 +429,10 @@
       <p class="result-empty">Press the button. The stars will decide.</p>
     </div>
     <p class="count-badge" id="count-badge"></p>
+    <div class="frozen-area" id="frozen-area" style="display:none;">
+      <div class="frozen-label"><span>Frozen pick</span><button class="unfreeze-btn" onclick="unfreezeMovie('alien')">✕ Clear</button></div>
+      <div id="frozen-card"></div>
+    </div>
   </div>
   <div class="ghost-lives" id="ghost-lives"></div>
 </div>
@@ -425,6 +461,10 @@
       <p class="result-empty">Press the button. The forest will decide.</p>
     </div>
     <p class="count-badge" id="folk-count-badge"></p>
+    <div class="frozen-area" id="folk-frozen-area" style="display:none;">
+      <div class="frozen-label"><span>Frozen pick</span><button class="unfreeze-btn" onclick="unfreezeMovie('folk')">✕ Clear</button></div>
+      <div id="folk-frozen-card"></div>
+    </div>
   </div>
   <div class="ghost-lives" id="folk-ghost-lives"></div>
 </div>
@@ -699,6 +739,83 @@ function lockIn() {
   showScreen("lockin");
 }
 
+/* ---- FROZEN MOVIE STATE ---- */
+var frozenAlienMovie = null;
+var frozenFolkMovie = null;
+
+function buildCardHtml(pick, thumbs, showFreeze, freezeMode) {
+  var parts = [];
+  if (pick.year)     { parts.push(pick.year); }
+  if (pick.runtime)  { parts.push(pick.runtime + " min"); }
+  if (pick.director) { parts.push(pick.director); }
+  if (pick.language && pick.language !== "English") { parts.push(pick.language); }
+  var meta = parts.join(" · ");
+
+  var thumbFile = thumbs[pick.id];
+  var thumbHtml = thumbFile
+    ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
+    : '<div class="movie-thumb-missing">?</div>';
+
+  var heartHtml = pick.heart
+    ? '<img src="assets/pikura-heart-20751_128.gif" alt="♥" style="width:28px;height:auto;position:absolute;top:0.75rem;left:0.75rem;">'
+    : "";
+
+  var lockLabel = "✦ We're watching this one ✦";
+  var freezeBtn = showFreeze
+    ? '<button class="freeze-btn" onclick="freezeMovie(\'' + freezeMode + '\')">❄ Hold</button>'
+    : '';
+
+  return '<div class="movie-card" style="position:relative;">' +
+    heartHtml +
+    '<div class="movie-card-inner">' +
+      thumbHtml +
+      '<div class="movie-text">' +
+        '<div class="movie-title">' + pick.name + "</div>" +
+        (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
+        (pick.tagline ? '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + pick.tagline + "</div>" : "") +
+        (pick.overview ? '<div class="movie-summary">' + pick.overview + "</div>" : "") +
+        (pick.cast_top5 ? '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (pick.tmdb_rating ? pick.tmdb_rating.toFixed(1) + ' · ' : '') + pick.cast_top5 + "</div>" : "") +
+        renderKeywords(pick.keywords) +
+      "</div>" +
+    "</div>" +
+    '<div class="card-actions">' +
+      '<button class="lock-btn" onclick="lockIn()">' + lockLabel + '</button>' +
+      freezeBtn +
+    "</div>" +
+  "</div>";
+}
+
+function freezeMovie(mode) {
+  if (mode === 'alien') {
+    frozenAlienMovie = currentAlienPick;
+    var frozenArea = document.getElementById("frozen-area");
+    var frozenCard = document.getElementById("frozen-card");
+    frozenCard.innerHTML = buildCardHtml(frozenAlienMovie, ALIEN_THUMBNAILS, false, 'alien');
+    frozenArea.style.display = "";
+  } else {
+    frozenFolkMovie = currentFolkPick;
+    var frozenArea = document.getElementById("folk-frozen-area");
+    var frozenCard = document.getElementById("folk-frozen-card");
+    frozenCard.innerHTML = buildCardHtml(frozenFolkMovie, FOLK_THUMBNAILS, false, 'folk');
+    frozenArea.style.display = "";
+  }
+}
+
+function unfreezeMovie(mode) {
+  if (mode === 'alien') {
+    frozenAlienMovie = null;
+    document.getElementById("frozen-area").style.display = "none";
+    document.getElementById("frozen-card").innerHTML = "";
+  } else {
+    frozenFolkMovie = null;
+    document.getElementById("folk-frozen-area").style.display = "none";
+    document.getElementById("folk-frozen-card").innerHTML = "";
+  }
+}
+
+var currentAlienPick = null;
+var currentFolkPick = null;
+
 /* ---- SHUFFLE QUEUE ---- */
 var shuffleQueue = [];
 function refillQueue() {
@@ -721,6 +838,8 @@ function resetAlienScreen() {
   finalGirlActive = false;
   finalGirlLives = 3;
   renderGhosts();
+  unfreezeMovie('alien');
+  currentAlienPick = null;
 }
 
 function renderGhosts() {
@@ -781,45 +900,14 @@ async function rollMovie() {
 
   if (!shuffleQueue.length) { refillQueue(); }
   var pick = shuffleQueue.pop();
-
-  var parts = [];
-  if (pick.year)     { parts.push(pick.year); }
-  if (pick.runtime)  { parts.push(pick.runtime + " min"); }
-  if (pick.director) { parts.push(pick.director); }
-  if (pick.language && pick.language !== "English") { parts.push(pick.language); }
-  var meta = parts.join(" · ");
-
-  var thumbFile = ALIEN_THUMBNAILS[pick.id];
-  var thumbHtml = thumbFile
-    ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
-    : '<div class="movie-thumb-missing">?</div>';
+  currentAlienPick = pick;
 
   var remaining = shuffleQueue.length;
   var queueNote = finalGirlActive
     ? (finalGirlLives > 0 ? finalGirlLives + " pick" + (finalGirlLives !== 1 ? "s" : "") + " remaining" : "No more picks — final girl survived!")
     : (remaining > 0 ? remaining + " left before any repeats" : "Full rotation complete — reshuffling...");
 
-  var heartHtml = pick.heart
-    ? '<img src="assets/pikura-heart-20751_128.gif" alt="♥" style="width:28px;height:auto;position:absolute;top:0.75rem;left:0.75rem;">'
-    : "";
-
-  area.innerHTML =
-    '<div class="movie-card" style="position:relative;">' +
-      heartHtml +
-      '<div class="movie-card-inner">' +
-        thumbHtml +
-        '<div class="movie-text">' +
-          '<div class="movie-title">' + pick.name + "</div>" +
-          (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
-          (pick.tagline ? '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + pick.tagline + "</div>" : "") +
-          (pick.overview ? '<div class="movie-summary">' + pick.overview + "</div>" : "") +
-          (pick.cast_top5 ? '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (pick.tmdb_rating ? pick.tmdb_rating.toFixed(1) + ' · ' : '') + pick.cast_top5 + "</div>" : "") +
-          renderKeywords(pick.keywords) +
-        "</div>" +
-      "</div>" +
-      '<button class="lock-btn" onclick="lockIn()">✦ We\'re watching this one ✦</button>' +
-    "</div>";
-
+  area.innerHTML = buildCardHtml(pick, ALIEN_THUMBNAILS, true, 'alien');
   badge.textContent = queueNote;
 }
 
@@ -844,6 +932,8 @@ function resetFolkScreen() {
   folkFinalGirlActive = false;
   folkFinalGirlLives = 3;
   renderFolkGhosts();
+  unfreezeMovie('folk');
+  currentFolkPick = null;
 }
 
 function renderFolkGhosts() {
@@ -903,45 +993,14 @@ async function rollFolkMovie() {
 
   if (!folkShuffleQueue.length) { refillFolkQueue(); }
   var pick = folkShuffleQueue.pop();
-
-  var parts = [];
-  if (pick.year)     { parts.push(pick.year); }
-  if (pick.runtime)  { parts.push(pick.runtime + " min"); }
-  if (pick.director) { parts.push(pick.director); }
-  if (pick.language && pick.language !== "English") { parts.push(pick.language); }
-  var meta = parts.join(" · ");
-
-  var thumbFile = FOLK_THUMBNAILS[pick.id];
-  var thumbHtml = thumbFile
-    ? '<img class="movie-thumb" src="thumbnails/' + thumbFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'movie-thumb-missing\\\'>?</div>\'">'
-    : '<div class="movie-thumb-missing">?</div>';
+  currentFolkPick = pick;
 
   var remaining = folkShuffleQueue.length;
   var queueNote = folkFinalGirlActive
     ? (folkFinalGirlLives > 0 ? folkFinalGirlLives + " pick" + (folkFinalGirlLives !== 1 ? "s" : "") + " remaining" : "No more picks — final girl survived!")
     : (remaining > 0 ? remaining + " left before any repeats" : "Full rotation complete — reshuffling...");
 
-  var heartHtml = pick.heart
-    ? '<img src="assets/pikura-heart-20751_128.gif" alt="♥" style="width:28px;height:auto;position:absolute;top:0.75rem;left:0.75rem;">'
-    : "";
-
-  area.innerHTML =
-    '<div class="movie-card" style="position:relative;">' +
-      heartHtml +
-      '<div class="movie-card-inner">' +
-        thumbHtml +
-        '<div class="movie-text">' +
-          '<div class="movie-title">' + pick.name + "</div>" +
-          (meta ? '<div class="movie-meta">' + meta + "</div>" : "") +
-          (pick.tagline ? '<div class="movie-tagline" style="font-style:italic;color:var(--horror-mauve);font-size:0.85rem;margin-bottom:0.5rem;">' + pick.tagline + "</div>" : "") +
-          (pick.overview ? '<div class="movie-summary">' + pick.overview + "</div>" : "") +
-          (pick.cast_top5 ? '<div class="movie-meta" style="margin-top:0.5rem;">★ ' + (pick.tmdb_rating ? pick.tmdb_rating.toFixed(1) + ' · ' : '') + pick.cast_top5 + "</div>" : "") +
-          renderKeywords(pick.keywords) +
-        "</div>" +
-      "</div>" +
-      '<button class="lock-btn" onclick="lockIn()">✦ We\'re watching this one ✦</button>' +
-    "</div>";
-
+  area.innerHTML = buildCardHtml(pick, FOLK_THUMBNAILS, true, 'folk');
   badge.textContent = queueNote;
 }
 
