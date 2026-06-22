@@ -19,6 +19,11 @@
     --alien-green-mid: #236E20;
     --alien-green-muted: #2e5c2b;
     --alien-cream: #e8f5e8;
+    --mrh-bg: #587275;
+    --mrh-dark: #1E2F34;
+    --mrh-light: #CDECE6;
+    --mrh-mid: #58848B;
+    --mrh-accent: #3EA9C1;
   }
 
   body {
@@ -240,6 +245,83 @@
     border-radius: 4px; text-align: center; line-height: 1.8;
   }
 
+  /* MARITIME HORROR SCREEN */
+  #screen-maritime {
+    background: var(--mrh-bg);
+    position: relative;
+    overflow: hidden;
+  }
+  #screen-maritime .inner-header {
+    border-bottom-color: rgba(62, 169, 193, 0.15);
+  }
+  #screen-maritime .back-btn {
+    border-color: rgba(62, 169, 193, 0.3);
+    color: var(--mrh-accent);
+  }
+  #screen-maritime .back-btn:hover {
+    background: rgba(62, 169, 193, 0.08);
+    border-color: rgba(62, 169, 193, 0.6);
+  }
+  #screen-maritime .inner-header-title {
+    color: rgba(62, 169, 193, 0.3);
+  }
+  #screen-maritime .alien-eyebrow {
+    color: var(--mrh-mid);
+  }
+  #screen-maritime .alien-title {
+    color: var(--mrh-light);
+    text-shadow: 0 0 40px rgba(62, 169, 193, 0.25);
+  }
+  #screen-maritime .alien-subtitle {
+    color: var(--mrh-mid);
+  }
+  #screen-maritime .roll-btn {
+    border-color: var(--mrh-mid);
+    color: var(--mrh-accent);
+  }
+  #screen-maritime .roll-btn:hover {
+    background: rgba(62, 169, 193, 0.07);
+    border-color: var(--mrh-accent);
+  }
+  #screen-maritime .result-empty { color: rgba(62, 169, 193, 0.2); }
+  #screen-maritime .movie-card {
+    background: rgba(30, 47, 52, 0.5);
+    border-color: rgba(62, 169, 193, 0.2);
+  }
+  #screen-maritime .movie-card::before { background: var(--mrh-accent); }
+  #screen-maritime .movie-thumb { border-color: rgba(62, 169, 193, 0.15); }
+  #screen-maritime .movie-id { color: var(--mrh-mid); }
+  #screen-maritime .movie-title { color: var(--mrh-light); }
+  #screen-maritime .movie-meta { color: var(--mrh-mid); }
+  #screen-maritime .movie-summary { color: rgba(205, 236, 230, 0.7); border-top-color: rgba(62, 169, 193, 0.1); }
+  #screen-maritime .dot:nth-child(1) { background: var(--mrh-accent); }
+  #screen-maritime .dot:nth-child(2) { background: var(--mrh-mid); }
+  #screen-maritime .dot:nth-child(3) { background: var(--mrh-dark); }
+  #screen-maritime .count-badge { color: rgba(62, 169, 193, 0.25); }
+  #screen-maritime .frozen-label { color: rgba(62, 169, 193, 0.3); }
+  #screen-maritime .freeze-btn {
+    border-color: rgba(62, 169, 193, 0.25);
+    color: var(--mrh-mid);
+  }
+  #screen-maritime .freeze-btn:hover {
+    background: rgba(62, 169, 193, 0.07);
+    border-color: var(--mrh-accent);
+  }
+  #screen-maritime .no-movies { color: var(--mrh-mid); border-color: rgba(62, 169, 193, 0.15); }
+  #screen-maritime .keyword-chip {
+    background: rgba(62, 169, 193, 0.15);
+    border-color: rgba(62, 169, 193, 0.3);
+  }
+  .mrh-eye-bg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px; height: auto;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+  }
+
   /* GHOST LIVES */
   .ghost-lives {
     position: absolute; bottom: 1rem; right: 1rem;
@@ -389,6 +471,8 @@
 <audio id="audio-stab"   src="music/yodguard-healing-magic-5-378667.mp3"></audio>
 <audio id="audio-scream" src="music/u_r7cny11q7r-man-death-scream-186763.mp3"></audio>
 <audio id="audio-folk"   src="music/zuzannajedrys-crunching-leaves-262278.mp3"></audio>
+<audio id="audio-mrh-hover" src="music/freesound_community-ship-horn-distant-38390.mp3"></audio>
+<audio id="audio-mrh-bg"    src="music/wr-sound-library-flute-music-with-thunderstorm-ambiance-370523.mp3" loop></audio>
 
 <!-- SELECTION SCREEN -->
 <div id="screen-select" class="screen active">
@@ -470,6 +554,39 @@
 </div>
 
 
+<!-- MARITIME HORROR SCREEN -->
+<div id="screen-maritime" class="screen">
+  <img src="assets/mxj_files-eye-27079.gif" class="mrh-eye-bg" alt="">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <span class="inner-header-title">Horror Night</span>
+  </div>
+  <div class="alien-main" style="position:relative;z-index:1;">
+    <div class="alien-critters">
+      <img src="assets/carambano9999-rudder-4981_512.gif" alt="">
+    </div>
+    <p class="alien-eyebrow">Something stirs beneath</p>
+    <h1 class="alien-title">Dead Water</h1>
+    <p class="alien-subtitle">The sea does not forgive.</p>
+
+    <label class="final-girl-toggle">
+      <input type="checkbox" id="mrh-final-girl-checkbox">
+      <span class="final-girl-label">Final Girl Mode — 3 picks only</span>
+    </label>
+
+    <button class="roll-btn" id="mrh-roll-btn" onclick="rollMrhMovie()">✦ Pick our movie ✦</button>
+    <div class="result-area" id="mrh-result-area">
+      <p class="result-empty">Press the button. The deep will decide.</p>
+    </div>
+    <p class="count-badge" id="mrh-count-badge"></p>
+    <div class="frozen-area" id="mrh-frozen-area" style="display:none;">
+      <div class="frozen-label"><span>Frozen pick</span><button class="unfreeze-btn" onclick="unfreezeMovie('mrh')">✕ Clear</button></div>
+      <div id="mrh-frozen-card"></div>
+    </div>
+  </div>
+  <div class="ghost-lives" id="mrh-ghost-lives"></div>
+</div>
+
 <!-- LOCK-IN SCREEN -->
 <div id="screen-lockin" class="screen">
   <div class="lockin-main">
@@ -498,6 +615,8 @@ var ALIEN_MOVIES = [];
 var ALIEN_THUMBNAILS = {};
 var FOLK_MOVIES = [];
 var FOLK_THUMBNAILS = {};
+var MRH_MOVIES = [];
+var MRH_THUMBNAILS = {};
 
 /* =====================================================
    CSV PARSER
@@ -584,7 +703,8 @@ function parseCSV(text) {
 
 var THEMES = [
   { id: "alien",    gif: "assets/placidplace-ufo-21287_128.gif",    name: "They're Already Here", desc: "Aliens, and not the friendly kind.",           screen: "alien"    },
-  { id: "folk",     gif: "assets/kuzu420-mosquitoes-13105_512.gif",  name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"     }
+  { id: "folk",     gif: "assets/kuzu420-mosquitoes-13105_512.gif",  name: "Into the Woods",       desc: "Where the Old Gods Wait.",                     screen: "folk"     },
+  { id: "maritime", gif: "assets/carambano9999-rudder-4981_512.gif", name: "Dead Water",           desc: "The sea does not forgive.",                    screen: "maritime" }
 ];
 
 /* ---- AUDIO ---- */
@@ -593,11 +713,15 @@ var alienAudio  = document.getElementById("audio-alien");
 var stabAudio   = document.getElementById("audio-stab");
 var screamAudio = document.getElementById("audio-scream");
 var folkAudio   = document.getElementById("audio-folk");
+var mrhHoverAudio = document.getElementById("audio-mrh-hover");
+var mrhBgAudio    = document.getElementById("audio-mrh-bg");
 horrorAudio.volume = 0.06;
 alienAudio.volume  = 0.5;
 stabAudio.volume   = 0.8;
 screamAudio.volume = 0.9;
 folkAudio.volume   = 0.6;
+mrhHoverAudio.volume = 0.7;
+mrhBgAudio.volume    = 0.06;
 
 /* ---- EYES OVERLAY ---- */
 var eyes    = document.getElementById("eyes-overlay");
@@ -663,6 +787,7 @@ function buildThemeGrid() {
     card.onclick = function() { showScreen(theme.screen); };
     if (theme.id === "alien")    { attachHoverSound(card, alienAudio); }
     if (theme.id === "folk")     { attachHoverSound(card, folkAudio); }
+    if (theme.id === "maritime") { attachHoverSound(card, mrhHoverAudio); }
     if (theme.id === "marathon") { attachHoverSound(card, stabAudio); }
     if (theme.id === "preview")  { attachHoverSound(card, stabAudio); }
     grid.appendChild(card);
@@ -678,6 +803,13 @@ function showScreen(name) {
   }
   if (name === "folk") {
     resetFolkScreen();
+  }
+  if (name === "maritime") {
+    resetMrhScreen();
+    mrhBgAudio.currentTime = 0;
+    mrhBgAudio.play().catch(function() {});
+  } else {
+    mrhBgAudio.pause();
   }
   if (name === "preview") {
     var vid = document.getElementById("preview-video");
@@ -792,11 +924,17 @@ function freezeMovie(mode) {
     var frozenCard = document.getElementById("frozen-card");
     frozenCard.innerHTML = buildCardHtml(frozenAlienMovie, ALIEN_THUMBNAILS, false, 'alien');
     frozenArea.style.display = "";
-  } else {
+  } else if (mode === 'folk') {
     frozenFolkMovie = currentFolkPick;
     var frozenArea = document.getElementById("folk-frozen-area");
     var frozenCard = document.getElementById("folk-frozen-card");
     frozenCard.innerHTML = buildCardHtml(frozenFolkMovie, FOLK_THUMBNAILS, false, 'folk');
+    frozenArea.style.display = "";
+  } else if (mode === 'mrh') {
+    frozenMrhMovie = currentMrhPick;
+    var frozenArea = document.getElementById("mrh-frozen-area");
+    var frozenCard = document.getElementById("mrh-frozen-card");
+    frozenCard.innerHTML = buildCardHtml(frozenMrhMovie, MRH_THUMBNAILS, false, 'mrh');
     frozenArea.style.display = "";
   }
 }
@@ -806,10 +944,14 @@ function unfreezeMovie(mode) {
     frozenAlienMovie = null;
     document.getElementById("frozen-area").style.display = "none";
     document.getElementById("frozen-card").innerHTML = "";
-  } else {
+  } else if (mode === 'folk') {
     frozenFolkMovie = null;
     document.getElementById("folk-frozen-area").style.display = "none";
     document.getElementById("folk-frozen-card").innerHTML = "";
+  } else if (mode === 'mrh') {
+    frozenMrhMovie = null;
+    document.getElementById("mrh-frozen-area").style.display = "none";
+    document.getElementById("mrh-frozen-card").innerHTML = "";
   }
 }
 
@@ -1005,6 +1147,99 @@ async function rollFolkMovie() {
 }
 
 
+/* ---- MARITIME HORROR ROLL ---- */
+var mrhShuffleQueue = [];
+var mrhFinalGirlLives = 3;
+var mrhFinalGirlActive = false;
+var currentMrhPick = null;
+var frozenMrhMovie = null;
+
+function refillMrhQueue() {
+  mrhShuffleQueue = MRH_MOVIES.slice();
+  for (var i = mrhShuffleQueue.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = mrhShuffleQueue[i]; mrhShuffleQueue[i] = mrhShuffleQueue[j]; mrhShuffleQueue[j] = tmp;
+  }
+}
+
+function resetMrhScreen() {
+  document.getElementById("mrh-result-area").innerHTML = '<p class="result-empty">Press the button. The deep will decide.</p>';
+  document.getElementById("mrh-count-badge").textContent = "";
+  document.getElementById("mrh-final-girl-checkbox").checked = false;
+  document.getElementById("mrh-roll-btn").disabled = false;
+  mrhFinalGirlActive = false;
+  mrhFinalGirlLives = 3;
+  renderMrhGhosts();
+  unfreezeMovie('mrh');
+  currentMrhPick = null;
+}
+
+function renderMrhGhosts() {
+  var container = document.getElementById("mrh-ghost-lives");
+  container.innerHTML = "";
+  if (!mrhFinalGirlActive) return;
+  for (var i = 0; i < mrhFinalGirlLives; i++) {
+    var img = document.createElement("img");
+    img.src = "assets/mxj_files-ghost-23282.gif";
+    img.className = "ghost-life";
+    img.alt = "life";
+    container.appendChild(img);
+  }
+}
+
+document.getElementById("mrh-final-girl-checkbox").addEventListener("change", function() {
+  mrhFinalGirlActive = this.checked;
+  mrhFinalGirlLives = 3;
+  document.getElementById("mrh-roll-btn").disabled = false;
+  renderMrhGhosts();
+});
+
+function killMrhGhost() {
+  var container = document.getElementById("mrh-ghost-lives");
+  var ghosts = container.querySelectorAll(".ghost-life");
+  if (!ghosts.length) return;
+  var last = ghosts[ghosts.length - 1];
+  last.classList.add("dying");
+  screamAudio.currentTime = 0;
+  screamAudio.play().catch(function() {});
+  setTimeout(function() { last.remove(); }, 600);
+}
+
+async function rollMrhMovie() {
+  var area  = document.getElementById("mrh-result-area");
+  var badge = document.getElementById("mrh-count-badge");
+  var btn   = document.getElementById("mrh-roll-btn");
+
+  if (mrhFinalGirlActive) {
+    if (mrhFinalGirlLives <= 0) return;
+    mrhFinalGirlLives--;
+    killMrhGhost();
+    if (mrhFinalGirlLives <= 0) { btn.disabled = true; }
+  }
+
+  area.innerHTML = '<div class="rolling"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  badge.textContent = "";
+
+  await new Promise(function(r) { setTimeout(r, 800); });
+
+  if (!MRH_MOVIES.length) {
+    area.innerHTML = '<div class="no-movies">No movies in the list yet.</div>';
+    return;
+  }
+
+  if (!mrhShuffleQueue.length) { refillMrhQueue(); }
+  var pick = mrhShuffleQueue.pop();
+  currentMrhPick = pick;
+
+  var remaining = mrhShuffleQueue.length;
+  var queueNote = mrhFinalGirlActive
+    ? (mrhFinalGirlLives > 0 ? mrhFinalGirlLives + " pick" + (mrhFinalGirlLives !== 1 ? "s" : "") + " remaining" : "No more picks — final girl survived!")
+    : (remaining > 0 ? remaining + " left before any repeats" : "Full rotation complete — reshuffling...");
+
+  area.innerHTML = buildCardHtml(pick, MRH_THUMBNAILS, true, 'mrh');
+  badge.textContent = queueNote;
+}
+
 (function init() {
   fetch('./movies_enriched.csv')
     .then(function(r) { return r.text(); })
@@ -1014,6 +1249,8 @@ async function rollFolkMovie() {
       ALIEN_THUMBNAILS = {};
       FOLK_MOVIES = [];
       FOLK_THUMBNAILS = {};
+      MRH_MOVIES = [];
+      MRH_THUMBNAILS = {};
       movies.forEach(function(m) {
         var thumbFile = m.poster_file || (m.id + '.jpeg');
         if (m.id && m.id.startsWith('ALN')) {
@@ -1023,6 +1260,10 @@ async function rollFolkMovie() {
         if (m.id && m.id.startsWith('FLK')) {
           FOLK_MOVIES.push(m);
           FOLK_THUMBNAILS[m.id] = thumbFile;
+        }
+        if (m.id && m.id.startsWith('MRH')) {
+          MRH_MOVIES.push(m);
+          MRH_THUMBNAILS[m.id] = thumbFile;
         }
       });
       buildThemeGrid();
