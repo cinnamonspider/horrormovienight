@@ -283,6 +283,57 @@
   .marathon-queue-note { text-align: center; font-size: 0.85rem; color: var(--mauve); font-style: italic; margin-bottom: 0.5rem; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Export button */
+  .marathon-export-btn {
+    background: none; border: 1px solid rgba(150, 2, 0, 0.4);
+    color: var(--cream); font-family: 'Cinzel', serif;
+    font-size: 0.7rem; letter-spacing: 0.15em;
+    padding: 0.5rem 1.1rem; cursor: pointer; text-transform: uppercase;
+    border-radius: 2px; transition: background 0.2s, border-color 0.2s;
+    margin-left: auto;
+  }
+  .marathon-export-btn:hover { background: rgba(150, 2, 0, 0.1); border-color: var(--red); }
+
+  /* Export modal */
+  .export-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .export-modal {
+    background: #1a0a0a; border: 1px solid rgba(150, 2, 0, 0.5);
+    border-radius: 6px; padding: 2rem; max-width: 420px; width: 90%;
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+  .export-modal-title {
+    font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700;
+    color: var(--cream); letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .export-modal-input {
+    width: 100%; padding: 0.6rem 0.75rem;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(150, 2, 0, 0.35);
+    color: var(--cream); font-family: 'Crimson Text', serif; font-size: 1rem;
+    border-radius: 2px; outline: none;
+  }
+  .export-modal-input:focus { border-color: rgba(150, 2, 0, 0.7); }
+  .export-modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+  .export-modal-cancel {
+    background: none; border: 1px solid rgba(209, 191, 172, 0.15);
+    color: rgba(209, 191, 172, 0.45); font-family: 'Cinzel', serif;
+    font-size: 0.7rem; letter-spacing: 0.12em;
+    padding: 0.5rem 1rem; cursor: pointer; text-transform: uppercase;
+    border-radius: 2px; transition: background 0.2s, color 0.2s;
+  }
+  .export-modal-cancel:hover { background: rgba(255,255,255,0.04); color: var(--cream); }
+  .export-modal-confirm {
+    background: none; border: 1px solid rgba(150, 2, 0, 0.5);
+    color: var(--cream); font-family: 'Cinzel', serif;
+    font-size: 0.7rem; letter-spacing: 0.12em;
+    padding: 0.5rem 1rem; cursor: pointer; text-transform: uppercase;
+    border-radius: 2px; transition: background 0.2s, border-color 0.2s;
+  }
+  .export-modal-confirm:hover { background: rgba(150, 2, 0, 0.12); border-color: var(--red); }
 </style>
 </head>
 <body>
@@ -762,6 +813,7 @@ function renderMarathonResults() {
   html += '<div class="marathon-results-actions">';
   html += '<button class="marathon-reroll-all-btn" onclick="rerollUnfrozen()">↺ Reroll Unfrozen</button>';
   html += '<button class="marathon-adjust-btn" onclick="resetMarathon()">← Adjust Settings</button>';
+  html += '<button class="marathon-export-btn" onclick="showExportModal()">⬇ Export Movie Night</button>';
   html += '</div>';
 
   marathonSlots.forEach(function(slot, i) {
@@ -871,6 +923,346 @@ document.getElementById('kw-search').addEventListener('input', function() {
       console.error('Failed to load movie data:', err);
     });
 })();
+
+/* =====================================================
+   EXPORT MOVIE NIGHT
+   ===================================================== */
+function getDefaultExportName() {
+  var themes = [];
+  GENRES.forEach(function(genre) {
+    genre.themes.forEach(function(theme) {
+      var cb = document.getElementById('marathon-theme-' + theme.id);
+      if (cb && cb.checked) themes.push(theme.name);
+    });
+  });
+  var keywords = getSelectedKeywords();
+  var parts = themes.length ? themes.join(', ') : 'Movie Marathon';
+  if (keywords.length) parts += ' — ' + keywords.slice(0, 3).join(', ');
+  return parts;
+}
+
+function showExportModal() {
+  var overlay = document.createElement('div');
+  overlay.className = 'export-modal-overlay';
+  overlay.innerHTML =
+    '<div class="export-modal">' +
+      '<div class="export-modal-title">Name Your Movie Night</div>' +
+      '<input class="export-modal-input" id="export-name-input" type="text" value="' + escHtml(getDefaultExportName()) + '" maxlength="80">' +
+      '<div class="export-modal-actions">' +
+        '<button class="export-modal-cancel" id="export-cancel-btn">Cancel</button>' +
+        '<button class="export-modal-confirm" id="export-confirm-btn">Export Image</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  var input = document.getElementById('export-name-input');
+  input.select();
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) { overlay.remove(); }
+  });
+  document.getElementById('export-cancel-btn').addEventListener('click', function() { overlay.remove(); });
+  document.getElementById('export-confirm-btn').addEventListener('click', function() {
+    var name = input.value.trim() || 'Movie Night';
+    overlay.remove();
+    generateExportImage(name);
+  });
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { document.getElementById('export-confirm-btn').click(); }
+    if (e.key === 'Escape') { overlay.remove(); }
+  });
+}
+
+function loadImage(src) {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() { resolve(img); };
+    img.onerror = function() { resolve(null); };
+    img.src = src;
+  });
+}
+
+function wrapText(ctx, text, maxWidth) {
+  var words = text.split(' ');
+  var lines = [], line = '';
+  for (var i = 0; i < words.length; i++) {
+    var test = line ? line + ' ' + words[i] : words[i];
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = words[i];
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function generateExportImage(movieNightName) {
+  var thumbPromises = marathonSlots.map(function(slot) {
+    var thumbFile = THUMBNAILS[slot.movie.id];
+    return thumbFile ? loadImage('thumbnails/' + thumbFile) : Promise.resolve(null);
+  });
+
+  Promise.all(thumbPromises).then(function(thumbImages) {
+    var W = 800;
+    var PAD = 40;
+    var CONTENT_W = W - PAD * 2;
+    var THUMB_W = 70;
+    var THUMB_H = 105;
+    var CARD_PAD = 20;
+    var TEXT_LEFT = THUMB_W + CARD_PAD + 16;
+    var TEXT_W = CONTENT_W - TEXT_LEFT - CARD_PAD;
+
+    // Pre-measure card heights
+    var measureCanvas = document.createElement('canvas');
+    measureCanvas.width = W;
+    var measureCtx = measureCanvas.getContext('2d');
+
+    var cardHeights = marathonSlots.map(function(slot, i) {
+      var m = slot.movie;
+      var y = 0;
+
+      // Title
+      measureCtx.font = 'bold 18px Cinzel, serif';
+      var titleLines = wrapText(measureCtx, m.name, TEXT_W);
+      y += titleLines.length * 22;
+
+      // Meta
+      y += 20;
+
+      // Tagline
+      if (m.tagline) y += 20;
+
+      // Overview
+      if (m.overview) {
+        measureCtx.font = '14px Crimson Text, serif';
+        var overviewLines = wrapText(measureCtx, m.overview, TEXT_W);
+        y += 12 + Math.min(overviewLines.length, 4) * 20;
+      }
+
+      // Keywords
+      if (m.keywords && m.keywords.length) y += 28;
+
+      return Math.max(y, THUMB_H) + CARD_PAD * 2;
+    });
+
+    // Calculate total canvas height
+    var totalH = 0;
+    totalH += 80;  // header
+    totalH += 10;  // gap
+    cardHeights.forEach(function(h) { totalH += h + 16; });
+    totalH += 60;  // total runtime bar
+    totalH += 40;  // footer
+    totalH += 20;  // bottom padding
+
+    var canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = totalH;
+    var ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#0e0b0b';
+    ctx.fillRect(0, 0, W, totalH);
+
+    // Header area
+    ctx.fillStyle = '#090606';
+    ctx.fillRect(0, 0, W, 80);
+    ctx.strokeStyle = 'rgba(150, 2, 0, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, 80); ctx.lineTo(W, 80); ctx.stroke();
+
+    // Title text
+    ctx.fillStyle = '#F0F2F5';
+    ctx.font = '900 22px Cinzel, serif';
+    ctx.textBaseline = 'middle';
+    var titleLines = wrapText(ctx, movieNightName, W - 80);
+    if (titleLines.length === 1) {
+      ctx.fillText(titleLines[0], PAD, 36);
+    } else {
+      ctx.font = '900 18px Cinzel, serif';
+      titleLines = wrapText(ctx, movieNightName, W - 80);
+      ctx.fillText(titleLines[0], PAD, 30);
+      if (titleLines[1]) ctx.fillText(titleLines[1], PAD, 52);
+    }
+
+    // Subtitle
+    ctx.fillStyle = '#9F6BA0';
+    ctx.font = 'italic 13px Crimson Text, serif';
+    ctx.fillText(marathonSlots.length + (marathonSlots.length === 2 ? ' — Double Feature' : ' — Triple Feature'), PAD, 68);
+
+    var curY = 90;
+
+    // Movie cards
+    marathonSlots.forEach(function(slot, i) {
+      var m = slot.movie;
+      var cardH = cardHeights[i];
+      var cardY = curY;
+
+      // Card background
+      ctx.fillStyle = 'rgba(25, 11, 9, 0.8)';
+      ctx.strokeStyle = 'rgba(150, 2, 0, 0.25)';
+      ctx.lineWidth = 1;
+      roundRect(ctx, PAD, cardY, CONTENT_W, cardH, 4);
+
+      // Film number label
+      ctx.fillStyle = '#9F6BA0';
+      ctx.font = '11px Cinzel, serif';
+      ctx.textBaseline = 'top';
+      ctx.fillText('FILM ' + (i + 1), PAD + CARD_PAD, cardY + CARD_PAD);
+
+      var thumbX = PAD + CARD_PAD;
+      var thumbY = cardY + CARD_PAD + 20;
+
+      // Thumbnail
+      if (thumbImages[i]) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(thumbX, thumbY, THUMB_W, THUMB_H);
+        ctx.clip();
+        ctx.drawImage(thumbImages[i], thumbX, thumbY, THUMB_W, THUMB_H);
+        ctx.restore();
+        ctx.strokeStyle = 'rgba(150, 2, 0, 0.25)';
+        ctx.strokeRect(thumbX, thumbY, THUMB_W, THUMB_H);
+      } else {
+        ctx.strokeStyle = 'rgba(209, 191, 172, 0.15)';
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(thumbX, thumbY, THUMB_W, THUMB_H);
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(209, 191, 172, 0.15)';
+        ctx.font = '24px serif';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        ctx.fillText('?', thumbX + THUMB_W / 2, thumbY + THUMB_H / 2);
+        ctx.textAlign = 'left';
+      }
+
+      // Text content
+      var tx = PAD + TEXT_LEFT;
+      var ty = cardY + CARD_PAD + 20;
+      ctx.textBaseline = 'top';
+
+      // Title
+      ctx.fillStyle = '#F0F2F5';
+      ctx.font = 'bold 18px Cinzel, serif';
+      var tLines = wrapText(ctx, m.name, TEXT_W);
+      tLines.forEach(function(line) {
+        ctx.fillText(line, tx, ty);
+        ty += 22;
+      });
+
+      // Meta
+      var parts = [];
+      if (m.year) parts.push(m.year);
+      if (m.runtime) parts.push(m.runtime + ' min');
+      if (m.director) parts.push(m.director);
+      if (m.language && m.language !== 'English') parts.push(m.language);
+      ctx.fillStyle = '#9F6BA0';
+      ctx.font = 'italic 13px Crimson Text, serif';
+      ctx.fillText(parts.join(' · '), tx, ty + 2);
+      ty += 20;
+
+      // Tagline
+      if (m.tagline) {
+        ctx.fillStyle = '#9F6BA0';
+        ctx.font = 'italic 13px Crimson Text, serif';
+        ctx.fillText(m.tagline.length > 60 ? m.tagline.substring(0, 57) + '…' : m.tagline, tx, ty);
+        ty += 20;
+      }
+
+      // Overview
+      if (m.overview) {
+        // Separator line
+        ctx.strokeStyle = 'rgba(150, 2, 0, 0.15)';
+        ctx.beginPath(); ctx.moveTo(tx, ty + 4); ctx.lineTo(tx + TEXT_W, ty + 4); ctx.stroke();
+        ty += 12;
+        ctx.fillStyle = 'rgba(240, 242, 245, 0.65)';
+        ctx.font = '14px Crimson Text, serif';
+        var oLines = wrapText(ctx, m.overview, TEXT_W);
+        oLines.slice(0, 4).forEach(function(line, li) {
+          if (li === 3 && oLines.length > 4) line = line.substring(0, line.length - 3) + '…';
+          ctx.fillText(line, tx, ty);
+          ty += 20;
+        });
+      }
+
+      // Keywords
+      if (m.keywords && m.keywords.length) {
+        ty += 6;
+        ctx.font = '11px Crimson Text, serif';
+        var kwX = tx;
+        var kwMax = Math.min(m.keywords.length, 5);
+        for (var k = 0; k < kwMax; k++) {
+          var kw = m.keywords[k];
+          var kwW = ctx.measureText(kw).width + 10;
+          if (kwX + kwW > tx + TEXT_W) break;
+          ctx.fillStyle = 'rgba(150, 2, 0, 0.25)';
+          roundRect(ctx, kwX, ty, kwW, 18, 2, true);
+          ctx.fillStyle = '#F0F2F5';
+          ctx.fillText(kw, kwX + 5, ty + 4);
+          kwX += kwW + 4;
+        }
+      }
+
+      curY += cardH + 16;
+    });
+
+    // Total runtime bar
+    var total = marathonSlots.reduce(function(sum, s) { return sum + (s.movie.runtime || 0); }, 0);
+    var hrs = Math.floor(total / 60), mins = total % 60;
+    var totalStr = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + 'm';
+
+    ctx.fillStyle = 'rgba(150, 2, 0, 0.08)';
+    ctx.strokeStyle = 'rgba(150, 2, 0, 0.4)';
+    roundRect(ctx, PAD, curY, CONTENT_W, 44, 4);
+    ctx.fillStyle = '#9F6BA0';
+    ctx.font = '11px Cinzel, serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('COMBINED RUNTIME', PAD + 16, curY + 22);
+    ctx.fillStyle = '#F0F2F5';
+    ctx.font = 'bold 16px Cinzel, serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(totalStr + ' (' + total + ' min)', PAD + CONTENT_W - 16, curY + 22);
+    ctx.textAlign = 'left';
+    curY += 56;
+
+    // Footer
+    ctx.fillStyle = 'rgba(209, 191, 172, 0.2)';
+    ctx.font = 'italic 11px Crimson Text, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('horrormovienight', W / 2, curY + 4);
+    ctx.textAlign = 'left';
+
+    // Download
+    canvas.toBlob(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = movieNightName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_').toLowerCase() + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r, fillOnly) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+  if (!fillOnly) ctx.stroke();
+}
 </script>
 </body>
 </html>
