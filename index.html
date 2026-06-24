@@ -170,6 +170,18 @@
   .footer-note { font-size: 0.78rem; color: rgba(240, 242, 245, 0.2); font-style: italic; letter-spacing: 0.03em; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- HORROR TRANSITION ---- */
+  #horror-transition {
+    position: fixed; inset: 0; z-index: 200;
+    background: #000;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  #horror-transition.active { display: flex; }
+  #horror-transition img {
+    max-height: 70vh; max-width: 90vw; object-fit: contain;
+    display: block; margin-bottom: 0;
+  }
 </style>
 </head>
 <body>
@@ -232,7 +244,13 @@
   </div>
 </div>
 
+<div id="horror-transition">
+  <img src="assets/kuzu420-okay-27234.gif" alt="">
+</div>
+
 <div id="bg-film"><img src="assets/prawny-film-25972.gif" alt=""></div>
+
+<audio id="audio-horror-transition" src="music/yodguard-healing-magic-5-378667.mp3"></audio>
 
 <audio id="audio-horror-hover" src="music/fadingembersaudio-spooky-cartoon-ghost-wooo-430234.mp3"></audio>
 <audio id="audio-comedy-hover" src="music/artificiallyinspired-90s-sitcom-laugh-track-353985.mp3"></audio>
@@ -278,6 +296,21 @@ function attachHoverSound(el, audio) {
 }
 
 attachHoverSound(document.getElementById('card-horror'), horrorAudio);
+
+var horrorCard = document.getElementById('card-horror');
+var horrorTransition = document.getElementById('horror-transition');
+var horrorTransitionAudio = document.getElementById('audio-horror-transition');
+horrorTransitionAudio.volume = 0.6;
+
+horrorCard.addEventListener('click', function(e) {
+  e.preventDefault();
+  horrorTransition.classList.add('active');
+  horrorTransitionAudio.currentTime = 0;
+  horrorTransitionAudio.play().catch(function() {});
+  setTimeout(function() {
+    window.location.href = 'horror.html';
+  }, 2500);
+});
 attachHoverSound(document.getElementById('card-comedy'), comedyAudio);
 
 var adventureAudio = document.getElementById('audio-adventure-hover');
