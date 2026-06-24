@@ -174,8 +174,9 @@
   /* ---- HORROR TRANSITION ---- */
   #horror-transition {
     position: fixed; inset: 0; z-index: 200;
-    background: #000;
+    background: transparent;
     display: none; align-items: flex-end; justify-content: center;
+    pointer-events: none;
   }
   #horror-transition.active { display: flex; }
   #horror-transition img {
