@@ -312,6 +312,14 @@ horrorCard.addEventListener('click', function(e) {
     window.location.href = 'horror.html';
   }, 2500);
 });
+
+// When returning to this page (incl. via the browser back/forward cache),
+// make sure the horror transition hand-gif is not left playing.
+window.addEventListener('pageshow', function() {
+  horrorTransition.classList.remove('active');
+  horrorTransitionAudio.pause();
+  horrorTransitionAudio.currentTime = 0;
+});
 attachHoverSound(document.getElementById('card-comedy'), comedyAudio);
 
 var adventureAudio = document.getElementById('audio-adventure-hover');
