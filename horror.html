@@ -19,11 +19,11 @@
     --alien-green-mid: #236E20;
     --alien-green-muted: #2e5c2b;
     --alien-cream: #e8f5e8;
-    --mrh-bg: #587275;
-    --mrh-dark: #1E2F34;
-    --mrh-light: #CDECE6;
-    --mrh-mid: #58848B;
-    --mrh-accent: #3EA9C1;
+    --mrh-bg: #0A171B;
+    --mrh-dark: #060F12;
+    --mrh-light: #BFE0DA;
+    --mrh-mid: #4A727A;
+    --mrh-accent: #2E8CA3;
   }
 
   body {
@@ -90,14 +90,12 @@
   .theme-card:hover { background: rgba(150, 2, 0, 0.12); border-color: rgba(150, 2, 0, 0.6); }
   .theme-card:hover::before { opacity: 1; }
   .theme-gif {
-    width: auto;
-    height: 100%;
-    max-height: 80px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
     flex-shrink: 0;
     opacity: 0;
     transition: opacity 0.3s ease;
-    align-self: stretch;
   }
   .theme-card:hover .theme-gif { opacity: 1; }
   .theme-name { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--horror-cream); margin-bottom: 0.2rem; }
@@ -247,7 +245,7 @@
 
   /* MARITIME HORROR SCREEN */
   #screen-maritime {
-    background: var(--mrh-bg);
+    background: radial-gradient(ellipse at center, #122B32 0%, var(--mrh-bg) 55%, #03090B 100%);
     position: relative;
     overflow: hidden;
   }
@@ -806,10 +804,12 @@ function showScreen(name) {
   }
   if (name === "maritime") {
     resetMrhScreen();
+    horrorAudio.pause();
     mrhBgAudio.currentTime = 0;
     mrhBgAudio.play().catch(function() {});
   } else {
     mrhBgAudio.pause();
+    if (horrorAudio.paused) { horrorAudio.play().catch(function() {}); }
   }
   if (name === "preview") {
     var vid = document.getElementById("preview-video");
