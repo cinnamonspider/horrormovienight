@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Movie Night</title>
+<script>
+  /* Set this before paint so the intro overlay never flashes when arriving via a back-to-menu button */
+  if (location.search.indexOf('menu') !== -1) {
+    document.documentElement.className += ' skip-intro';
+  }
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 
@@ -58,6 +64,11 @@
     animation: blinkSkip 1.5s ease-in-out infinite;
   }
   @keyframes blinkSkip { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+
+  /* When returning to the menu via a "back to menu" button, skip the intro gif entirely */
+  html.skip-intro #intro-overlay { display: none !important; }
+  html.skip-intro #screen-home { opacity: 1; }
+  html.skip-intro #bg-film { opacity: 1; }
 
   /* ---- HOME SCREEN ---- */
   #screen-home {
@@ -283,8 +294,19 @@ function dismissIntro() {
   staticAudio.play().catch(function() {});
 }
 
-overlay.addEventListener('click', dismissIntro);
-setTimeout(dismissIntro, 5000);
+var skipIntro = location.search.indexOf('menu') !== -1;
+if (skipIntro) {
+  // Arrived from a "back to menu" button — show the home screen immediately, no gif.
+  introDismissed = true;
+  overlay.style.display = 'none';
+  homeScreen.classList.add('visible');
+  bgFilm.classList.add('visible');
+  document.body.style.overflow = '';
+  staticAudio.play().catch(function() {});
+} else {
+  overlay.addEventListener('click', dismissIntro);
+  setTimeout(dismissIntro, 5000);
+}
 
 var horrorAudio = document.getElementById('audio-horror-hover');
 var comedyAudio = document.getElementById('audio-comedy-hover');
