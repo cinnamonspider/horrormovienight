@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animated</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --an-yellow: #FACA00;
+    --an-peach: #FACA99;
+    --an-blue: #4B9CFF;
+    --an-black: #000000;
+    --an-cream: #fff6e6;
+  }
+
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--an-black);
+    color: var(--an-cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* SELECTION SCREEN */
+  #screen-select {
+    background: var(--an-black);
+    align-items: center; justify-content: center;
+    text-align: center; position: relative;
+  }
+  .select-inner {
+    max-width: 560px; width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem; position: relative; z-index: 2;
+  }
+  .eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.75rem;
+    letter-spacing: 0.25em; color: var(--an-blue);
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .select-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900;
+    color: var(--an-yellow); line-height: 1.1; margin-bottom: 0.5rem;
+    text-shadow: 0 0 40px rgba(250, 202, 0, 0.25);
+  }
+  .select-subtitle {
+    font-size: 1.15rem; color: var(--an-peach);
+    font-style: italic; margin-bottom: 2rem;
+  }
+  .hero-gif {
+    width: 130px; height: auto; display: block;
+    margin: 0 auto 2rem; border-radius: 4px;
+  }
+  .theme-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; width: 100%; margin-bottom: 2rem; }
+  .theme-card {
+    background: rgba(75, 156, 255, 0.06);
+    border: 1px solid rgba(75, 156, 255, 0.3); border-radius: 4px;
+    padding: 1.5rem 1.75rem; cursor: pointer; text-align: left;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex; align-items: center; gap: 1.25rem;
+    position: relative; overflow: hidden;
+    text-decoration: none; color: inherit;
+  }
+  .theme-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--an-yellow); opacity: 0; transition: opacity 0.2s;
+  }
+  .theme-card:hover { background: rgba(75, 156, 255, 0.14); border-color: rgba(250, 202, 0, 0.6); }
+  .theme-card:hover::before { opacity: 1; }
+  .theme-gif {
+    width: auto; height: 100%; max-height: 80px;
+    object-fit: contain; flex-shrink: 0;
+    opacity: 0; transition: opacity 0.3s ease; align-self: stretch;
+  }
+  .theme-card:hover .theme-gif { opacity: 1; }
+  .theme-name { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--an-yellow); margin-bottom: 0.2rem; }
+  .theme-desc { font-size: 0.9rem; color: var(--an-peach); font-style: italic; }
+  .theme-arrow { margin-left: auto; color: var(--an-yellow); font-size: 1.25rem; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+  .theme-card:hover .theme-arrow { opacity: 1; }
+  .divider { border: none; border-top: 1px solid rgba(75, 156, 255, 0.2); margin: 2rem 0; width: 100%; }
+  .footer-note { font-size: 0.8rem; color: rgba(255, 246, 230, 0.3); font-style: italic; }
+</style>
+</head>
+<body>
+
+<audio id="audio-bg" src="music/alexis_gaming_cam-ding-cartoon-346093.mp3"></audio>
+<audio id="audio-ghibli-hover" src="music/soundsgoodmusic-train-whistle-306031.mp3"></audio>
+
+<div id="screen-select" class="screen active">
+  <div class="select-inner">
+    <p class="eyebrow">Choose your world</p>
+    <h1 class="select-title">Animated</h1>
+    <p class="select-subtitle">Hand-drawn worlds and impossible places.</p>
+    <img class="hero-gif" src="assets/misskalem-big-eyes-26769.gif" alt="">
+    <div class="theme-grid">
+      <a class="theme-card" href="ghibli.html" id="card-ghibli">
+        <img src="assets/tumblr_cd46bd4bfe2efa50109ab3b5f4180769_66ae32f8_400.webp" class="theme-gif" alt="">
+        <div>
+          <div class="theme-name">Studio Ghibli</div>
+          <div class="theme-desc">Spirits, skies, and quiet magic.</div>
+        </div>
+        <span class="theme-arrow">→</span>
+      </a>
+    </div>
+    <hr class="divider">
+    <p class="footer-note">A movie will be chosen for you. Resistance is futile.</p>
+    <p style="margin-top:1.5rem;"><a href="index.html?menu" style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,246,230,0.25);text-decoration:none;" onmouseover="this.style.color='rgba(255,246,230,0.6)'" onmouseout="this.style.color='rgba(255,246,230,0.25)'">← Main Menu</a></p>
+  </div>
+</div>
+
+<script>
+var bgAudio = document.getElementById("audio-bg");
+bgAudio.volume = 0.4;
+document.addEventListener("click", function() {
+  if (bgAudio.paused) { bgAudio.play().catch(function() {}); }
+}, { once: true });
+
+function attachHoverSound(el, audio) {
+  el.addEventListener("mouseenter", function() { audio.currentTime = 0; audio.play().catch(function() {}); });
+  el.addEventListener("mouseleave", function() { audio.pause(); audio.currentTime = 0; });
+}
+
+var ghibliAudio = document.getElementById("audio-ghibli-hover");
+ghibliAudio.volume = 0.5;
+attachHoverSound(document.getElementById("card-ghibli"), ghibliAudio);
+</script>
+</body>
+</html>
