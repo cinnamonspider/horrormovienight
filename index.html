@@ -236,6 +236,14 @@
         <div class="genre-desc">Fortune favors the bold.</div>
         <div class="genre-arrow">→</div>
       </a>
+      <a class="genre-card" href="animated.html" id="card-animated">
+        <div class="genre-gif-wrap">
+          <img class="genre-gif" src="assets/misskalem-big-eyes-26769.gif" alt="">
+        </div>
+        <div class="genre-name">Animated</div>
+        <div class="genre-desc">Hand-drawn worlds and impossible places.</div>
+        <div class="genre-arrow">→</div>
+      </a>
     </div>
 
     <p class="section-label">Can't decide on just one?</p>
@@ -269,6 +277,7 @@
 <audio id="audio-static" src="music/dragon-studio-radio-static-323621.mp3" loop></audio>
 <audio id="audio-marathon-hover" src="music/freesound_community-watch-ticking-69213.mp3" loop></audio>
 <audio id="audio-adventure-hover" src="music/freesound_community-chest-opening-87569.mp3"></audio>
+<audio id="audio-animated-hover" src="music/alexis_gaming_cam-ding-cartoon-346093.mp3"></audio>
 
 <script>
 /* =====================================================
@@ -347,6 +356,10 @@ attachHoverSound(document.getElementById('card-comedy'), comedyAudio);
 var adventureAudio = document.getElementById('audio-adventure-hover');
 adventureAudio.volume = 0.5;
 attachHoverSound(document.getElementById('card-adventure'), adventureAudio);
+
+var animatedAudio = document.getElementById('audio-animated-hover');
+animatedAudio.volume = 0.5;
+attachHoverSound(document.getElementById('card-animated'), animatedAudio);
 
 var marathonAudio = document.getElementById('audio-marathon-hover');
 marathonAudio.volume = 0.4;

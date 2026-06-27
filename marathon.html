@@ -460,6 +460,18 @@ var GENRES = [
     ]
   },
   {
+    id: "animated",
+    name: "Animated",
+    themes: [
+      {
+        id: "ghibli",
+        name: "Studio Ghibli",
+        desc: "Spirits, skies, and quiet magic.",
+        filter: function(m) { return m.id && m.id.startsWith('GHB'); }
+      }
+    ]
+  },
+  {
     id: "comedy",
     name: "Comedy",
     themes: []
@@ -504,6 +516,8 @@ function parseCSV(text) {
     for (var j = 0; j < headers.length; j++) r[headers[j]] = vals[j] !== undefined ? vals[j] : '';
     var lang = r['original_language'];
     if (lang === 'en') lang = 'English';
+    else if (lang === 'ja') lang = 'Japanese';
+    else if (lang === 'fr') lang = 'French';
     else if (lang === 'ru') lang = 'Russian';
     movies.push({
       id:          r['id'],
