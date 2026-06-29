@@ -23,9 +23,10 @@
     --dark: #070706;
     --red: #960200;
     --mauve: #9F6BA0;
-    --crt-green: #62ffae;
-    --crt-amber: #ffc14e;
-    --crt-red: #ff3b3b;
+    --vhs-magenta: #ff2e88;
+    --vhs-cyan: #35e6ff;
+    --vhs-amber: #ffb43c;
+    --vhs-red: #ff2d4f;
   }
 
   body {
@@ -87,14 +88,15 @@
   }
   .eyebrow {
     font-family: 'VT323', monospace; font-size: 1rem;
-    letter-spacing: 0.35em; color: rgba(98, 255, 174, 0.7);
+    letter-spacing: 0.35em; color: var(--vhs-cyan);
     text-transform: uppercase; margin-bottom: 0.75rem;
-    text-shadow: 0 0 8px rgba(98, 255, 174, 0.5);
+    text-shadow: -1.5px 0 rgba(255, 46, 136, 0.6), 1.5px 0 rgba(53, 230, 255, 0.6), 0 0 8px rgba(53, 230, 255, 0.4);
   }
   .main-title {
     font-family: 'Cinzel', serif;
     font-size: clamp(2.2rem, 7vw, 4rem); font-weight: 900;
     color: var(--cream); line-height: 1.05; margin-bottom: 0.5rem; letter-spacing: 0.02em;
+    text-shadow: -2px 0 rgba(255, 46, 136, 0.35), 2px 0 rgba(53, 230, 255, 0.35);
   }
   .main-subtitle {
     font-size: 1.1rem; color: var(--beige);
@@ -102,21 +104,21 @@
   }
 
   /* =====================================================
-     CRT CABLE GUIDE
+     VHS CABLE GUIDE
      ===================================================== */
   .tv-guide {
     width: 100%;
-    background: linear-gradient(180deg, #0a120d 0%, #060a07 60%, #030604 100%);
-    border: 2px solid rgba(98, 255, 174, 0.28);
+    background: linear-gradient(180deg, #0c0718 0%, #0a0a20 55%, #06040f 100%);
+    border: 2px solid rgba(53, 230, 255, 0.30);
     border-radius: 16px / 12px;
     padding: 0.5rem;
     position: relative;
     overflow: hidden;
     box-shadow:
-      inset 0 0 90px rgba(0, 0, 0, 0.92),
-      inset 0 0 14px rgba(98, 255, 174, 0.12),
+      inset 0 0 90px rgba(0, 0, 0, 0.9),
+      inset 0 0 16px rgba(255, 46, 136, 0.12),
       0 0 34px rgba(0, 0, 0, 0.8),
-      0 0 60px rgba(98, 255, 174, 0.06);
+      0 0 60px rgba(53, 230, 255, 0.08);
     animation: crtFlicker 5s infinite steps(60);
   }
   /* scanlines */
@@ -124,7 +126,7 @@
     content: ''; position: absolute; inset: 0; z-index: 6; pointer-events: none;
     background: repeating-linear-gradient(
       rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 2px,
-      rgba(0, 0, 0, 0.28) 3px, rgba(0, 0, 0, 0.28) 4px);
+      rgba(0, 0, 0, 0.30) 3px, rgba(0, 0, 0, 0.30) 4px);
     opacity: 0.55;
   }
   /* screen-curve vignette */
@@ -133,6 +135,22 @@
     border-radius: 16px / 12px;
     background: radial-gradient(120% 130% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%);
     box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
+  }
+  /* VHS tracking band — a soft glitch bar that rolls up the screen */
+  .vhs-tracking {
+    position: absolute; left: 0; right: 0; top: 110%; height: 64px; z-index: 5;
+    pointer-events: none; opacity: 0.5; mix-blend-mode: screen;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(53,230,255,0.05) 35%,
+      rgba(255,255,255,0.10) 50%,
+      rgba(255,46,136,0.06) 65%,
+      rgba(255,255,255,0) 100%);
+    animation: vhsTrack 7s linear infinite;
+  }
+  @keyframes vhsTrack {
+    0%   { top: 110%; }
+    100% { top: -20%; }
   }
   @keyframes crtFlicker {
     0%, 96%, 100% { opacity: 1; }
@@ -146,16 +164,19 @@
     display: flex; align-items: center; justify-content: space-between;
     gap: 1rem; padding: 0.55rem 0.95rem; margin-bottom: 0.4rem;
     font-family: 'VT323', monospace; letter-spacing: 0.12em;
-    color: var(--crt-green); text-shadow: 0 0 8px rgba(98, 255, 174, 0.45);
-    background: rgba(98, 255, 174, 0.06);
-    border-bottom: 1px solid rgba(98, 255, 174, 0.22);
+    color: var(--vhs-cyan); text-shadow: 0 0 8px rgba(53, 230, 255, 0.45);
+    background: rgba(53, 230, 255, 0.06);
+    border-bottom: 1px solid rgba(53, 230, 255, 0.22);
     text-transform: uppercase; font-size: 1.05rem;
     position: relative; z-index: 2;
   }
   .guide-bar-title { display: flex; align-items: center; gap: 0.5rem; }
-  .guide-live { color: var(--crt-red); text-shadow: 0 0 8px rgba(255, 59, 59, 0.6); }
+  .guide-live { color: var(--vhs-red); text-shadow: 0 0 8px rgba(255, 45, 79, 0.65); }
   .guide-live .dot { animation: blinkSkip 1.1s steps(2) infinite; }
-  .guide-clock { color: var(--crt-amber); text-shadow: 0 0 8px rgba(255, 193, 78, 0.5); }
+  .guide-clock {
+    color: var(--vhs-amber);
+    text-shadow: -1px 0 rgba(255,46,136,0.5), 1px 0 rgba(53,230,255,0.5), 0 0 8px rgba(255,180,60,0.4);
+  }
 
   /* channel rows */
   .channel {
@@ -163,7 +184,7 @@
     grid-template-columns: 3.6rem 104px 1fr auto;
     align-items: center; gap: 1rem;
     padding: 0.7rem 0.95rem;
-    border-bottom: 1px dashed rgba(98, 255, 174, 0.14);
+    border-bottom: 1px dashed rgba(53, 230, 255, 0.16);
     text-decoration: none; color: inherit; cursor: pointer;
     position: relative; z-index: 2;
     transition: background 0.2s ease;
@@ -171,39 +192,34 @@
   .channel:last-of-type { border-bottom: none; }
   .channel::before {
     content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-    width: 3px; background: var(--crt-green); opacity: 0;
-    box-shadow: 0 0 10px var(--crt-green); transition: opacity 0.2s;
+    width: 3px; background: var(--vhs-magenta); opacity: 0;
+    box-shadow: 0 0 10px var(--vhs-magenta); transition: opacity 0.2s;
   }
-  .channel:hover { background: rgba(98, 255, 174, 0.07); }
+  .channel:hover { background: rgba(255, 46, 136, 0.08); }
   .channel:hover::before { opacity: 1; }
 
-  /* channel number */
+  /* channel number — camcorder-timestamp amber with VHS color bleed */
   .channel-num {
     display: flex; flex-direction: column; align-items: flex-end;
     line-height: 0.9; font-family: 'VT323', monospace;
-    color: var(--crt-green); text-shadow: 0 0 8px rgba(98, 255, 174, 0.5);
+    color: var(--vhs-amber);
+    text-shadow: -1.5px 0 rgba(255,46,136,0.6), 1.5px 0 rgba(53,230,255,0.6), 0 0 9px rgba(255,180,60,0.35);
   }
-  .ch-label { font-size: 0.6rem; letter-spacing: 0.25em; opacity: 0.65; }
+  .ch-label { font-size: 0.6rem; letter-spacing: 0.25em; opacity: 0.75; color: var(--vhs-cyan); text-shadow: none; }
   .ch-digits { font-size: 2rem; }
 
-  /* the little CRT preview screen — identical size for every channel */
+  /* the little preview screen — identical size for every channel */
   .channel-screen {
     width: 104px; height: 78px; position: relative; overflow: hidden;
     background: #000; border-radius: 7px;
-    border: 1px solid rgba(98, 255, 174, 0.3);
+    border: 1px solid rgba(53, 230, 255, 0.32);
     box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.95), 0 0 0 2px rgba(0,0,0,0.6);
   }
-  /* default "no signal" static — same for every channel until you tune in */
+  /* default "no signal" static — VHS noise gif, same for every channel until you tune in */
   .channel-static {
     position: absolute; inset: 0; opacity: 0.9;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    background-size: 130px 130px;
-    animation: snow 0.45s steps(5) infinite;
+    background: url('assets/psddude-noise-18561_512.gif') center / cover;
     transition: opacity 0.35s ease;
-  }
-  @keyframes snow {
-    0% { background-position: 0 0; }
-    100% { background-position: 130px 65px; }
   }
   /* the channel's gif — hidden until hover, then it "tunes in" */
   .channel-gif {
@@ -232,16 +248,16 @@
   /* tune-in call to action */
   .channel-cta {
     font-family: 'VT323', monospace; font-size: 1.1rem; letter-spacing: 0.1em;
-    color: var(--crt-green); text-shadow: 0 0 8px rgba(98, 255, 174, 0.5);
+    color: var(--vhs-magenta); text-shadow: 0 0 8px rgba(255, 46, 136, 0.55);
     text-transform: uppercase; opacity: 0; transition: opacity 0.2s; white-space: nowrap;
   }
-  .channel:hover .channel-cta { opacity: 0.85; }
+  .channel:hover .channel-cta { opacity: 0.9; }
 
   /* horror gets the cursed channel treatment */
-  .channel--horror .channel-num { color: var(--crt-red); text-shadow: 0 0 10px rgba(255, 59, 59, 0.65); }
-  .channel--horror::before { background: var(--crt-red); box-shadow: 0 0 10px var(--crt-red); }
-  .channel--horror:hover { background: rgba(150, 2, 0, 0.16); }
-  .channel--horror .channel-cta { color: var(--crt-red); text-shadow: 0 0 8px rgba(255, 59, 59, 0.55); }
+  .channel--horror .channel-num { color: var(--vhs-red); text-shadow: -1.5px 0 rgba(255,46,136,0.5), 1.5px 0 rgba(53,230,255,0.4), 0 0 11px rgba(255,45,79,0.7); }
+  .channel--horror::before { background: var(--vhs-red); box-shadow: 0 0 10px var(--vhs-red); }
+  .channel--horror:hover { background: rgba(255, 45, 79, 0.12); }
+  .channel--horror .channel-cta { color: var(--vhs-red); text-shadow: 0 0 8px rgba(255, 45, 79, 0.55); }
 
   @media (max-width: 520px) {
     .channel { grid-template-columns: 2.8rem 80px 1fr; gap: 0.7rem; }
@@ -252,7 +268,7 @@
 
   .footer-note {
     font-family: 'VT323', monospace; font-size: 0.95rem; letter-spacing: 0.08em;
-    color: rgba(98, 255, 174, 0.32); margin-top: 1.4rem; text-transform: uppercase;
+    color: rgba(53, 230, 255, 0.34); margin-top: 1.4rem; text-transform: uppercase;
   }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -286,6 +302,7 @@
     <p class="main-subtitle">Flip through the channels. Choose your poison.</p>
 
     <div class="tv-guide">
+      <span class="vhs-tracking" aria-hidden="true"></span>
       <div class="guide-bar">
         <span class="guide-bar-title">&#128250; Cable Guide</span>
         <span class="guide-live"><span class="dot">&#9679;</span> LIVE</span>
