@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Television Episodes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=VT323&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* ---- Retro TV palette (Television select screen) ---- */
+    --tv-argent:  #c0c0c0;
+    --tv-acid:    #c0c000;
+    --tv-green:   #00c000;
+    --tv-turq:    #00c0c0;
+    --tv-magenta: #c000c0;
+    --tv-red:     #c00000;
+    --tv-blue:    #0000c0;
+    --tv-black:   #131313; /* Chinese Black */
+    --tv-oxford:  #00214c;
+    --tv-white:   #ffffff;
+    --tv-violet:  #32006a; /* Deep Violet */
+    --tv-vampire: #090909; /* Vampire / Eerie Black */
+
+    /* ---- King of the Hill palette (from the Arlen, TX color scheme) ---- */
+    --koth-sky:       #3A4A85;
+    --koth-gold:      #DCC15E;
+    --koth-gold-deep: #C19E48;
+    --koth-aqua:      #9FCFCB;
+    --koth-khaki:     #8C7248;
+    --koth-grass:     #4F7E3C;
+    --koth-peach:     #EFB394;
+    --koth-maroon:    #6E2A30;
+    --koth-slate:     #62706C;
+  }
+
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--tv-vampire);
+    color: var(--tv-argent);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* =====================================================
+     TELEVISION SELECT SCREEN — retro color-bar vibe
+     ===================================================== */
+  #screen-select {
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(50,0,106,0.45) 0%, transparent 60%),
+      var(--tv-vampire);
+    align-items: center; justify-content: center;
+    text-align: center; position: relative;
+  }
+  /* faint CRT scanlines over everything */
+  #screen-select::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 5;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.18) 3px,
+      rgba(0,0,0,0) 4px
+    );
+    opacity: 0.5;
+  }
+  .color-bars {
+    display: flex; width: 100%; max-width: 560px; height: 14px;
+    margin-bottom: 2rem; border-radius: 2px; overflow: hidden;
+    box-shadow: 0 0 24px rgba(0,192,192,0.25);
+  }
+  .color-bars span { flex: 1; }
+  .cb-argent  { background: var(--tv-argent); }
+  .cb-acid    { background: var(--tv-acid); }
+  .cb-green   { background: var(--tv-green); }
+  .cb-turq    { background: var(--tv-turq); }
+  .cb-magenta { background: var(--tv-magenta); }
+  .cb-red     { background: var(--tv-red); }
+  .cb-blue    { background: var(--tv-blue); }
+
+  .select-inner {
+    max-width: 560px; width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem; position: relative; z-index: 6;
+  }
+  .eyebrow {
+    font-family: 'VT323', monospace; font-size: 1.15rem;
+    letter-spacing: 0.35em; color: var(--tv-turq);
+    text-transform: uppercase; margin-bottom: 1rem;
+    text-shadow: 0 0 8px rgba(0,192,192,0.5);
+  }
+  .select-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900;
+    color: var(--tv-white); line-height: 1.1; margin-bottom: 0.6rem;
+    text-shadow: 2px 0 var(--tv-red), -2px 0 var(--tv-turq);
+  }
+  .select-subtitle {
+    font-size: 1.15rem; color: var(--tv-acid);
+    font-style: italic; margin-bottom: 2.5rem;
+  }
+  .show-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; width: 100%; margin-bottom: 2rem; }
+  .show-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(192,192,192,0.25); border-radius: 4px;
+    padding: 1.5rem 1.75rem; cursor: pointer; text-align: left;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    display: flex; align-items: center; gap: 1.25rem;
+    position: relative; overflow: hidden;
+  }
+  .show-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom,
+      var(--tv-acid), var(--tv-green), var(--tv-turq),
+      var(--tv-magenta), var(--tv-red), var(--tv-blue));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .show-card:hover {
+    background: rgba(0,192,192,0.08); border-color: var(--tv-turq);
+    box-shadow: 0 0 20px rgba(0,192,192,0.18);
+  }
+  .show-card:hover::before { opacity: 1; }
+  .show-gif {
+    width: 80px; height: 80px; object-fit: contain;
+    flex-shrink: 0; opacity: 0; transition: opacity 0.3s ease;
+  }
+  .show-card:hover .show-gif { opacity: 1; }
+  .show-name { font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: var(--tv-white); margin-bottom: 0.2rem; }
+  .show-desc { font-size: 0.9rem; color: var(--tv-argent); font-style: italic; opacity: 0.75; }
+  .show-arrow { margin-left: auto; color: var(--tv-turq); font-size: 1.25rem; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+  .show-card:hover .show-arrow { opacity: 1; }
+  .show-card.coming-soon { cursor: default; opacity: 0.5; }
+  .show-card.coming-soon:hover { background: rgba(255,255,255,0.03); border-color: rgba(192,192,192,0.25); box-shadow: none; }
+  .show-card.coming-soon:hover::before { opacity: 0; }
+  .soon-tag {
+    margin-left: auto; flex-shrink: 0;
+    font-family: 'VT323', monospace; font-size: 0.95rem; letter-spacing: 0.2em;
+    color: var(--tv-magenta); text-transform: uppercase;
+  }
+
+  .divider { border: none; border-top: 1px solid rgba(192,192,192,0.18); margin: 2rem 0; width: 100%; }
+  .footer-note { font-size: 0.95rem; color: rgba(192,192,192,0.4); font-style: italic; font-family: 'VT323', monospace; letter-spacing: 0.1em; }
+  .menu-link {
+    font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: rgba(192,192,192,0.35); text-decoration: none;
+  }
+  .menu-link:hover { color: var(--tv-turq); }
+
+  /* SHARED INNER HEADER */
+  .inner-header {
+    padding: 1.5rem 2rem;
+    display: flex; align-items: center; gap: 1rem;
+    flex-shrink: 0;
+  }
+  .back-btn {
+    background: none; border: 1px solid rgba(255,255,255,0.3);
+    color: var(--tv-white); font-family: 'Cinzel', serif;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    padding: 0.4rem 0.85rem; cursor: pointer; border-radius: 2px;
+    text-transform: uppercase; transition: background 0.2s, border-color 0.2s;
+  }
+  .inner-header-title {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.3em; text-transform: uppercase; margin-left: auto;
+  }
+
+  /* =====================================================
+     KING OF THE HILL SCREEN — Arlen, TX palette
+     ===================================================== */
+  #screen-koth {
+    background:
+      linear-gradient(to bottom, var(--koth-sky) 0%, #5a6a9e 45%, var(--koth-aqua) 72%, var(--koth-grass) 72%, #3f6a30 100%);
+    position: relative;
+  }
+  #screen-koth .inner-header { border-bottom: 1px solid rgba(19,19,19,0.15); background: rgba(58,74,133,0.4); }
+  #screen-koth .back-btn { border-color: rgba(255,255,255,0.5); color: var(--tv-white); }
+  #screen-koth .back-btn:hover { background: rgba(255,255,255,0.12); border-color: var(--tv-white); }
+  #screen-koth .inner-header-title { color: rgba(255,255,255,0.7); }
+
+  .koth-main {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; text-align: center; position: relative; z-index: 1;
+  }
+  .koth-hank { width: 110px; height: auto; display: block; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(19,19,19,0.3)); }
+  .koth-eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.7rem;
+    letter-spacing: 0.3em; color: var(--koth-maroon);
+    text-transform: uppercase; margin-bottom: 0.6rem;
+    background: rgba(255,255,255,0.65); padding: 0.25rem 0.75rem; border-radius: 2px;
+  }
+  .koth-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.2rem, 7vw, 4rem); font-weight: 900;
+    color: var(--tv-white); line-height: 1; margin-bottom: 0.5rem;
+    letter-spacing: 0.03em; text-shadow: 0 3px 0 var(--koth-gold-deep), 0 5px 12px rgba(19,19,19,0.4);
+  }
+  .koth-subtitle { font-size: 1.05rem; color: var(--koth-maroon); font-style: italic; margin-bottom: 2rem; font-weight: 600; }
+
+  .koth-toggle {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 1.75rem; cursor: pointer;
+    background: rgba(255,255,255,0.55); padding: 0.5rem 1rem; border-radius: 4px;
+  }
+  .koth-toggle input[type="checkbox"] {
+    accent-color: var(--koth-maroon);
+    width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;
+  }
+  .koth-toggle-label {
+    font-family: 'Cinzel', serif; font-size: 0.72rem;
+    letter-spacing: 0.1em; color: var(--koth-khaki);
+    text-transform: uppercase; user-select: none;
+  }
+
+  .roll-btn {
+    background: var(--koth-gold); border: 2px solid var(--koth-gold-deep);
+    color: var(--koth-maroon); font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: 0.9rem; letter-spacing: 0.18em;
+    padding: 1rem 2.5rem; cursor: pointer; text-transform: uppercase;
+    border-radius: 3px; transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+    margin-bottom: 2.5rem; box-shadow: 0 4px 0 var(--koth-gold-deep);
+  }
+  .roll-btn:hover { background: #e8cf72; box-shadow: 0 4px 14px rgba(19,19,19,0.3); }
+  .roll-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--koth-gold-deep); }
+  .roll-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .result-area {
+    width: 100%; max-width: 620px; min-height: 200px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .result-empty {
+    color: rgba(19,19,19,0.55); font-style: italic; font-size: 1rem;
+    background: rgba(255,255,255,0.45); padding: 1rem 1.5rem; border-radius: 4px;
+  }
+
+  .ep-card {
+    width: 100%; background: var(--tv-white);
+    border: 1px solid rgba(19,19,19,0.12); border-radius: 6px;
+    padding: 1.5rem; text-align: left; color: #1d1d1d;
+    animation: fadeIn 0.4s ease; position: relative; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(19,19,19,0.3);
+  }
+  .ep-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--koth-sky), var(--koth-grass), var(--koth-gold), var(--koth-peach), var(--koth-maroon));
+  }
+  .ep-card-inner { display: flex; gap: 1.25rem; align-items: flex-start; }
+  .ep-thumb {
+    width: 200px; flex-shrink: 0; border-radius: 4px;
+    border: 1px solid rgba(19,19,19,0.15);
+    object-fit: cover; aspect-ratio: 16/9; background: var(--koth-aqua);
+  }
+  .ep-thumb-missing {
+    width: 200px; flex-shrink: 0; aspect-ratio: 16/9;
+    border: 1px dashed rgba(19,19,19,0.2); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(19,19,19,0.2); font-size: 1.5rem;
+  }
+  .ep-text { flex: 1; min-width: 0; }
+  .ep-show {
+    font-family: 'Cinzel', serif; font-size: 0.62rem;
+    letter-spacing: 0.2em; color: var(--koth-sky);
+    text-transform: uppercase; margin-bottom: 0.35rem; font-weight: 700;
+  }
+  .ep-se {
+    display: inline-block; font-family: 'VT323', monospace; font-size: 1rem;
+    background: var(--koth-sky); color: var(--tv-white);
+    padding: 0.05rem 0.5rem; border-radius: 2px; margin-bottom: 0.45rem; letter-spacing: 0.1em;
+  }
+  .ep-title {
+    font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 700;
+    color: var(--koth-maroon); margin-bottom: 0.35rem; line-height: 1.2;
+  }
+  .ep-meta { font-size: 0.85rem; color: var(--koth-khaki); margin-bottom: 0.75rem; font-style: italic; }
+  .ep-rating { color: var(--koth-gold-deep); font-weight: 700; font-style: normal; }
+  .ep-summary {
+    font-size: 1rem; color: rgba(29,29,29,0.78); line-height: 1.6;
+    border-top: 1px solid rgba(19,19,19,0.1); padding-top: 0.85rem;
+  }
+  .ep-credits { font-size: 0.8rem; color: var(--koth-slate); margin-top: 0.65rem; font-style: italic; }
+
+  .card-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+  .lock-btn {
+    flex: 1; background: var(--koth-grass); border: 2px solid #3f6a30;
+    color: var(--tv-white); font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: 0.72rem; letter-spacing: 0.15em;
+    padding: 0.75rem; cursor: pointer; text-transform: uppercase;
+    border-radius: 3px; transition: background 0.2s;
+  }
+  .lock-btn:hover { background: #5d9447; }
+
+  .count-badge {
+    margin-top: 1.75rem; font-size: 1rem; color: rgba(19,19,19,0.6);
+    font-style: italic; font-family: 'VT323', monospace; letter-spacing: 0.08em;
+    background: rgba(255,255,255,0.45); padding: 0.3rem 0.8rem; border-radius: 3px;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .rolling { display: flex; gap: 6px; align-items: center; justify-content: center; min-height: 100px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; animation: pulse 1s ease-in-out infinite; }
+  .dot:nth-child(1) { background: var(--koth-gold); }
+  .dot:nth-child(2) { animation-delay: 0.2s; background: var(--koth-grass); }
+  .dot:nth-child(3) { animation-delay: 0.4s; background: var(--koth-maroon); }
+  @keyframes pulse { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+  /* LOCK-IN SCREEN */
+  #screen-lockin {
+    background: linear-gradient(to bottom, var(--koth-sky) 0%, var(--koth-grass) 100%);
+    align-items: center; justify-content: center; flex-direction: column;
+    text-align: center; padding: 2rem; position: relative;
+  }
+  .lockin-main { display: flex; flex-direction: column; align-items: center; gap: 2rem; max-width: 520px; }
+  .lockin-hank { width: 150px; height: auto; display: block; filter: drop-shadow(0 6px 10px rgba(19,19,19,0.35)); }
+  .lockin-message {
+    font-family: 'Cinzel', serif; font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 700; color: var(--tv-white); line-height: 1.4; letter-spacing: 0.03em;
+    text-shadow: 0 2px 6px rgba(19,19,19,0.4);
+  }
+  .lockin-card {
+    background: rgba(255,255,255,0.92); color: #1d1d1d; border-radius: 6px;
+    padding: 1rem 1.5rem; font-style: italic; font-size: 1rem;
+  }
+  .lockin-back { margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<audio id="audio-koth-hover" src="music/saboteurcomics-beer-opening-407833.mp3"></audio>
+
+<!-- TELEVISION SELECT SCREEN -->
+<div id="screen-select" class="screen active">
+  <div class="select-inner">
+    <div class="color-bars">
+      <span class="cb-argent"></span><span class="cb-acid"></span><span class="cb-green"></span>
+      <span class="cb-turq"></span><span class="cb-magenta"></span><span class="cb-red"></span><span class="cb-blue"></span>
+    </div>
+    <p class="eyebrow">Now Broadcasting</p>
+    <h1 class="select-title">Television Episodes</h1>
+    <p class="select-subtitle">Short on time? Find only the best episodes of your favorite TV shows.</p>
+    <div class="show-grid" id="show-grid"></div>
+    <hr class="divider">
+    <p class="footer-note">Please stand by.</p>
+    <p style="margin-top:1.5rem;"><a href="index.html?menu" class="menu-link">← Main Menu</a></p>
+  </div>
+</div>
+
+<!-- KING OF THE HILL SCREEN -->
+<div id="screen-koth" class="screen">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <span class="inner-header-title">Television Episodes</span>
+  </div>
+  <div class="koth-main">
+    <img class="koth-hank" src="assets/hank.gif" alt="">
+    <p class="koth-eyebrow">Channel 84 · Arlen, Texas</p>
+    <h1 class="koth-title">King of the Hill</h1>
+    <p class="koth-subtitle">That boy ain't right — but these episodes are.</p>
+
+    <label class="koth-toggle">
+      <input type="checkbox" id="koth-best-checkbox">
+      <span class="koth-toggle-label">Best episodes only · ★ 8.0+</span>
+    </label>
+
+    <button class="roll-btn" id="koth-roll-btn" onclick="rollEpisode()">▶ Pick our episode</button>
+    <div class="result-area" id="koth-result-area">
+      <p class="result-empty">Pop a cold one and hit the button.</p>
+    </div>
+    <p class="count-badge" id="koth-count-badge"></p>
+  </div>
+</div>
+
+<!-- LOCK-IN SCREEN -->
+<div id="screen-lockin" class="screen">
+  <div class="lockin-main">
+    <img class="lockin-hank" src="assets/hank.gif" alt="">
+    <p class="lockin-message" id="lockin-message"></p>
+    <div class="lockin-card" id="lockin-card"></div>
+    <button class="back-btn lockin-back" onclick="goBack()">← Pick another</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   EPISODE DATA (populated by CSV fetch)
+   ===================================================== */
+var KOTH_EPISODES = [];
+
+/* =====================================================
+   CSV PARSER
+   ===================================================== */
+function parseCSVRaw(text) {
+  var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  var headers = parseCSVLine(lines[0]);
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var line = lines[i];
+    if (!line.trim()) continue;
+    var vals = parseCSVLine(line);
+    var obj = {};
+    for (var j = 0; j < headers.length; j++) {
+      obj[headers[j]] = vals[j] !== undefined ? vals[j] : '';
+    }
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function parseCSVLine(line) {
+  var fields = [];
+  var i = 0;
+  while (i < line.length) {
+    if (line[i] === '"') {
+      i++;
+      var val = '';
+      while (i < line.length) {
+        if (line[i] === '"') {
+          if (line[i + 1] === '"') { val += '"'; i += 2; }
+          else { i++; break; }
+        } else { val += line[i]; i++; }
+      }
+      fields.push(val);
+      if (line[i] === ',') i++;
+    } else {
+      var start = i;
+      while (i < line.length && line[i] !== ',') i++;
+      fields.push(line.slice(start, i));
+      if (line[i] === ',') i++;
+    }
+  }
+  return fields;
+}
+
+function parseEpisodes(text) {
+  var raw = parseCSVRaw(text);
+  return raw.map(function(r) {
+    return {
+      id:        r['id'],
+      show:      r['show_name'],
+      season:    parseInt(r['season_number']) || 0,
+      episode:   parseInt(r['episode_number']) || 0,
+      title:     r['episode_title'],
+      overview:  r['overview'],
+      airDate:   r['air_date'],
+      runtime:   parseInt(r['runtime_min']) || 0,
+      rating:    parseFloat(r['tmdb_episode_rating']) || 0,
+      stillFile: r['still_file'],
+      directors: r['directors'],
+      writers:   r['writers'],
+      guests:    r['guest_stars_top5']
+    };
+  });
+}
+
+/* ---- SHOWS available on the Television menu ---- */
+var SHOWS = [
+  { id: "koth", gif: "assets/hank.gif", name: "King of the Hill", desc: "Propane, propane accessories, and the people of Arlen, Texas.", screen: "koth", available: true }
+];
+
+/* ---- AUDIO ---- */
+var kothHoverAudio = document.getElementById("audio-koth-hover");
+kothHoverAudio.volume = 0.6;
+
+function attachHoverSound(card, audio) {
+  card.addEventListener("mouseenter", function() {
+    audio.currentTime = 0;
+    audio.play().catch(function() {});
+  });
+  card.addEventListener("mouseleave", function() {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+}
+
+/* ---- SHOW GRID ---- */
+function buildShowGrid() {
+  var grid = document.getElementById("show-grid");
+  SHOWS.forEach(function(show) {
+    var card = document.createElement("div");
+    card.className = "show-card" + (show.available ? "" : " coming-soon");
+    card.innerHTML =
+      '<img src="' + show.gif + '" class="show-gif" alt="">' +
+      '<div><div class="show-name">' + show.name + '</div>' +
+      '<div class="show-desc">' + show.desc + '</div></div>' +
+      (show.available ? '<span class="show-arrow">→</span>' : '<span class="soon-tag">Coming Soon</span>');
+    if (show.available) {
+      card.onclick = function() { showScreen(show.screen); };
+      if (show.id === "koth") { attachHoverSound(card, kothHoverAudio); }
+    }
+    grid.appendChild(card);
+  });
+}
+
+/* ---- SCREEN SWITCHING ---- */
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach(function(s) { s.classList.remove("active"); });
+  document.getElementById("screen-" + name).classList.add("active");
+  if (name === "koth") { resetKothScreen(); }
+}
+
+function goBack() {
+  var cur = document.querySelector(".screen.active");
+  if (cur && cur.id !== "screen-select") { showScreen("select"); }
+  else { window.location.href = "index.html?menu"; }
+}
+
+/* ---- KING OF THE HILL ROLL ---- */
+var kothShuffleQueue = [];
+var currentEpisode = null;
+
+function activeEpisodes() {
+  var bestOnly = document.getElementById("koth-best-checkbox").checked;
+  return bestOnly
+    ? KOTH_EPISODES.filter(function(e) { return e.rating >= 8.0; })
+    : KOTH_EPISODES.slice();
+}
+
+function refillKothQueue() {
+  kothShuffleQueue = activeEpisodes();
+  for (var i = kothShuffleQueue.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = kothShuffleQueue[i]; kothShuffleQueue[i] = kothShuffleQueue[j]; kothShuffleQueue[j] = tmp;
+  }
+}
+
+function resetKothScreen() {
+  document.getElementById("koth-result-area").innerHTML = '<p class="result-empty">Pop a cold one and hit the button.</p>';
+  document.getElementById("koth-count-badge").textContent = "";
+  document.getElementById("koth-best-checkbox").checked = false;
+  kothShuffleQueue = [];
+  currentEpisode = null;
+}
+
+/* Reshuffle when the "best only" filter changes so it takes effect immediately. */
+document.getElementById("koth-best-checkbox").addEventListener("change", function() {
+  kothShuffleQueue = [];
+});
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function buildEpisodeCard(ep) {
+  var year = ep.airDate ? ep.airDate.slice(0, 4) : "";
+  var parts = [];
+  if (year)        { parts.push(year); }
+  if (ep.runtime)  { parts.push(ep.runtime + " min"); }
+  if (ep.rating)   { parts.push('<span class="ep-rating">★ ' + ep.rating.toFixed(1) + '</span>'); }
+  var meta = parts.join(" · ");
+
+  var thumbHtml = ep.stillFile
+    ? '<img class="ep-thumb" src="thumbnails/' + ep.stillFile + '" alt="" onerror="this.outerHTML=\'<div class=\\\'ep-thumb-missing\\\'>?</div>\'">'
+    : '<div class="ep-thumb-missing">?</div>';
+
+  var credits = [];
+  if (ep.directors) { credits.push("Dir. " + ep.directors); }
+  if (ep.guests)    { credits.push("Guest stars: " + ep.guests); }
+  var creditsHtml = credits.length ? '<div class="ep-credits">' + escapeHtml(credits.join(" · ")) + '</div>' : '';
+
+  return '<div class="ep-card">' +
+    '<div class="ep-card-inner">' +
+      thumbHtml +
+      '<div class="ep-text">' +
+        '<div class="ep-show">' + escapeHtml(ep.show) + '</div>' +
+        '<span class="ep-se">S' + ep.season + ' · E' + ep.episode + '</span>' +
+        '<div class="ep-title">' + escapeHtml(ep.title) + '</div>' +
+        (meta ? '<div class="ep-meta">' + meta + '</div>' : '') +
+        (ep.overview ? '<div class="ep-summary">' + escapeHtml(ep.overview) + '</div>' : '') +
+        creditsHtml +
+      '</div>' +
+    '</div>' +
+    '<div class="card-actions">' +
+      '<button class="lock-btn" onclick="lockIn()">▶ We\'re watching this one</button>' +
+    '</div>' +
+  '</div>';
+}
+
+async function rollEpisode() {
+  var area  = document.getElementById("koth-result-area");
+  var badge = document.getElementById("koth-count-badge");
+
+  kothHoverAudio.currentTime = 0;
+  kothHoverAudio.play().catch(function() {});
+
+  area.innerHTML = '<div class="rolling"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  badge.textContent = "";
+
+  await new Promise(function(r) { setTimeout(r, 700); });
+
+  if (!activeEpisodes().length) {
+    area.innerHTML = '<p class="result-empty">No episodes to show.</p>';
+    return;
+  }
+
+  if (!kothShuffleQueue.length) { refillKothQueue(); }
+  var pick = kothShuffleQueue.pop();
+  currentEpisode = pick;
+
+  var remaining = kothShuffleQueue.length;
+  badge.textContent = remaining > 0
+    ? remaining + " left before any repeats"
+    : "Full rotation complete — reshuffling...";
+
+  area.innerHTML = buildEpisodeCard(pick);
+}
+
+var LOCKIN_MESSAGES = [
+  "Yep. Yep. Yep. Mm-hmm.",
+  "Now that's a dang ol' good episode.",
+  "Settle in. This one's a keeper.",
+  "I tell you what.",
+  "Go on, get comfortable.",
+  "This is gonna be a good one, I tell you hwat."
+];
+
+function lockIn() {
+  if (!currentEpisode) return;
+  var msg = LOCKIN_MESSAGES[Math.floor(Math.random() * LOCKIN_MESSAGES.length)];
+  document.getElementById("lockin-message").textContent = msg;
+  document.getElementById("lockin-card").innerHTML =
+    '<strong>King of the Hill</strong> · S' + currentEpisode.season + ' E' + currentEpisode.episode +
+    ' — “' + escapeHtml(currentEpisode.title) + '”';
+  showScreen("lockin");
+}
+
+(function init() {
+  buildShowGrid();
+  fetch('./episodes_enriched.csv')
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      var eps = parseEpisodes(text);
+      KOTH_EPISODES = eps.filter(function(e) { return e.id && e.id.indexOf('KTH') === 0; });
+    })
+    .catch(function(err) {
+      var area = document.getElementById("koth-result-area");
+      if (area) { area.innerHTML = '<p class="result-empty">Failed to load episode data: ' + escapeHtml(err.message) + '</p>'; }
+    });
+})();
+</script>
+</body>
+</html>
