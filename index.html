@@ -259,6 +259,19 @@
       <span class="marathon-home-arrow">→</span>
     </a>
 
+    <p class="section-label" style="margin-top:1.5rem;">Not in the mood for a movie?</p>
+    <a class="marathon-home-card" href="television.html" id="card-television">
+      <span class="marathon-home-icon">
+        <span class="marathon-home-icon-emoji">📺</span>
+        <img class="marathon-home-icon-gif" src="assets/placidplace-couch-potato-15747.gif" alt="">
+      </span>
+      <div class="marathon-home-text">
+        <div class="marathon-home-name">Television Episodes</div>
+        <div class="marathon-home-desc">Short on time? Find only the best episodes of your favorite TV shows.</div>
+      </div>
+      <span class="marathon-home-arrow">→</span>
+    </a>
+
     <hr class="divider">
     <p class="footer-note">A movie will be chosen for you. Resistance is futile.</p>
   </div>
@@ -278,6 +291,7 @@
 <audio id="audio-marathon-hover" src="music/freesound_community-watch-ticking-69213.mp3" loop></audio>
 <audio id="audio-adventure-hover" src="music/freesound_community-chest-opening-87569.mp3"></audio>
 <audio id="audio-animated-hover" src="music/alexis_gaming_cam-ding-cartoon-346093.mp3"></audio>
+<audio id="audio-television-hover" src="music/freesound_community-tvon-108126.mp3"></audio>
 
 <script>
 /* =====================================================
@@ -364,6 +378,10 @@ attachHoverSound(document.getElementById('card-animated'), animatedAudio);
 var marathonAudio = document.getElementById('audio-marathon-hover');
 marathonAudio.volume = 0.4;
 attachHoverSound(document.getElementById('card-marathon'), marathonAudio);
+
+var televisionAudio = document.getElementById('audio-television-hover');
+televisionAudio.volume = 0.5;
+attachHoverSound(document.getElementById('card-television'), televisionAudio);
 
 </script>
 </body>
