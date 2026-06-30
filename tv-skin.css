@@ -1,0 +1,99 @@
+/* =====================================================
+   TV BROADCAST LAYER — shared chrome for every channel
+   page so the whole site feels like one television you
+   are surfing. Pairs with tv-skin.js.
+   ===================================================== */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+:root {
+  --tv-magenta: #ff2e88;
+  --tv-cyan: #35e6ff;
+  --tv-amber: #ffb43c;
+  --tv-red: #ff2d4f;
+}
+
+/* Unify navigation: hide each page's own "back to menu" link (even ones
+   rendered later by the page's own JS) — the GUIDE button replaces them. */
+a[href^="index.html?menu"]:not(.tv-guide-btn) { display: none !important; }
+
+/* ---- "tuning in" overlay (static burst + channel bug) ---- */
+#tv-tuning {
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; align-items: center; justify-content: center;
+  background: #000; pointer-events: none;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+}
+#tv-tuning.show {
+  opacity: 1; visibility: visible;
+  transition: opacity 0.1s ease;
+}
+.tv-tuning-static {
+  position: absolute; inset: 0; opacity: 0.85;
+  background: url('assets/psddude-noise-18561_512.gif') center / cover;
+}
+.tv-tuning-bug {
+  position: relative; z-index: 2;
+  display: flex; align-items: baseline; gap: 0.55rem;
+  font-family: 'VT323', monospace; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 0.5rem 1.2rem;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(53, 230, 255, 0.5);
+  color: var(--tv-amber);
+  text-shadow: -1.5px 0 rgba(255, 46, 136, 0.7), 1.5px 0 rgba(53, 230, 255, 0.7);
+}
+.tv-bug-ch   { font-size: 1rem; color: var(--tv-cyan); text-shadow: none; align-self: center; }
+.tv-bug-num  { font-size: 2.6rem; line-height: 1; }
+.tv-bug-name { font-size: 1.5rem; color: var(--tv-cyan); text-shadow: none; align-self: center; }
+#tv-tuning.is-horror .tv-bug-num { color: var(--tv-red); }
+
+/* ---- "GUIDE" return button (top-left) ---- */
+.tv-guide-btn {
+  position: fixed; top: 1rem; left: 1rem; z-index: 9000;
+  font-family: 'VT323', monospace; font-size: 1.15rem; letter-spacing: 0.12em;
+  text-transform: uppercase; text-decoration: none;
+  color: var(--tv-cyan); background: rgba(5, 6, 12, 0.8);
+  border: 1px solid rgba(53, 230, 255, 0.45);
+  padding: 0.35rem 0.85rem; border-radius: 4px;
+  text-shadow: 0 0 8px rgba(53, 230, 255, 0.4);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.tv-guide-btn:hover { background: rgba(53, 230, 255, 0.14); color: #fff; border-color: var(--tv-cyan); }
+
+/* ---- channel-surf remote (bottom-right) ---- */
+.tv-remote {
+  position: fixed; bottom: 1rem; right: 1rem; z-index: 9000;
+  display: flex; flex-direction: column; align-items: stretch; gap: 0.3rem;
+  padding: 0.45rem; border-radius: 9px;
+  background: rgba(5, 6, 12, 0.82);
+  border: 1px solid rgba(255, 46, 136, 0.4);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 46, 136, 0.12);
+}
+.tv-ch-btn {
+  font-family: 'VT323', monospace; font-size: 1.05rem; letter-spacing: 0.1em;
+  text-transform: uppercase; cursor: pointer;
+  color: var(--tv-magenta); background: rgba(255, 46, 136, 0.08);
+  border: 1px solid rgba(255, 46, 136, 0.35); border-radius: 4px;
+  padding: 0.25rem 0.8rem; text-shadow: 0 0 6px rgba(255, 46, 136, 0.4);
+  transition: background 0.15s;
+}
+.tv-ch-btn:hover { background: rgba(255, 46, 136, 0.22); }
+.tv-ch-readout {
+  text-align: center; font-family: 'VT323', monospace; line-height: 1;
+  color: var(--tv-amber);
+  text-shadow: -1px 0 rgba(255, 46, 136, 0.6), 1px 0 rgba(53, 230, 255, 0.6);
+}
+.tv-ch-readout-label { display: block; font-size: 0.6rem; letter-spacing: 0.25em; color: var(--tv-cyan); text-shadow: none; }
+.tv-ch-readout-num   { font-size: 1.7rem; }
+.tv-remote.is-horror .tv-ch-readout-num { color: var(--tv-red); }
+.tv-remote-hint {
+  text-align: center; font-family: 'VT323', monospace; font-size: 0.62rem;
+  letter-spacing: 0.12em; color: rgba(53, 230, 255, 0.5); text-transform: uppercase;
+}
+
+@media (max-width: 520px) {
+  .tv-bug-num { font-size: 1.9rem; }
+  .tv-bug-name { font-size: 1.15rem; }
+  .tv-guide-btn { font-size: 1rem; }
+  .tv-remote-hint { display: none; }
+}
