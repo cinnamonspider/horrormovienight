@@ -581,14 +581,13 @@ document.getElementById('guide-channels').addEventListener('mouseleave', resetPr
 /* =====================================================
    CHANNEL HOVER SOUND + PREVIEW WIRING
    ===================================================== */
-var changeAudio = document.getElementById('audio-channel-change');
-changeAudio.volume = 0.45;
 
-/* mouseenter: tune the preview screen, blip the channel-change sound, then the channel's own sound */
+/* mouseenter: tune the preview screen and play the channel's own custom sound.
+   (No generic channel-change blip here — that belongs to surfing between pages,
+   not hovering; layering it over every hover drowned out the custom sounds.) */
 function attachChannel(el, audio) {
   el.addEventListener('mouseenter', function() {
     setPreview(el);
-    changeAudio.currentTime = 0; changeAudio.play().catch(function() {});
     audio.currentTime = 0; audio.play().catch(function() {});
   });
   el.addEventListener('mouseleave', function() { audio.pause(); audio.currentTime = 0; });
