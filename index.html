@@ -98,11 +98,13 @@
   }
   .wizard-link {
     cursor: pointer; -webkit-user-select: none; user-select: none;
-    transition: text-shadow 0.2s ease, color 0.2s ease;
+    transition: filter 0.2s ease;
   }
   .wizard-link:hover {
-    color: #fff;
-    text-shadow: -2px 0 rgba(255, 46, 136, 0.6), 2px 0 rgba(53, 230, 255, 0.6), 0 0 14px rgba(159, 107, 160, 0.7);
+    filter: drop-shadow(0 0 14px rgba(159, 107, 160, 0.7));
+  }
+  .wizard-logo {
+    display: block; height: clamp(2.2rem, 6vw, 3.4rem); width: auto;
   }
 
   /* hidden easter-egg gif — pops up centered, plays once, then disappears */
@@ -383,7 +385,7 @@
   <div class="selector-inner" style="padding:2rem;margin:auto;">
     <div class="tv-guide">
       <span class="vhs-tracking" aria-hidden="true"></span>
-      <h1 class="guide-title"><span class="wizard-link" id="watch-wizard">Watch Wizard</span></h1>
+      <h1 class="guide-title"><span class="wizard-link" id="watch-wizard"><img class="wizard-logo" src="assets/g406431.png" alt="Watch Wizard"></span></h1>
       <div class="guide-bar">
         <span class="guide-date" id="guide-date">--- --- --</span>
         <span class="guide-live"><span class="dot">&#9679;</span> LIVE</span>
