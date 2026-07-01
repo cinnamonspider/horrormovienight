@@ -245,6 +245,10 @@
     color: var(--cream); letter-spacing: 0.05em; text-transform: uppercase;
     margin-bottom: 0.5rem; line-height: 1.1;
   }
+  /* logo stands in for "Tonight's Lineup" until a channel is previewed */
+  .wizard-link { display: block; margin-bottom: 0.5rem; }
+  .guide-preview.on .wizard-link { display: none; }
+  .guide-preview:not(.on) .preview-name { display: none; }
   .preview-desc {
     font-size: 1rem; color: var(--beige); font-style: italic; opacity: 0.78; line-height: 1.4;
   }
@@ -385,7 +389,6 @@
   <div class="selector-inner" style="padding:2rem;margin:auto;">
     <div class="tv-guide">
       <span class="vhs-tracking" aria-hidden="true"></span>
-      <h1 class="guide-title"><span class="wizard-link" id="watch-wizard"><img class="wizard-logo" src="assets/g406431.png" alt="Watch Wizard"></span></h1>
       <div class="guide-bar">
         <span class="guide-date" id="guide-date">--- --- --</span>
         <span class="guide-live"><span class="dot">&#9679;</span> LIVE</span>
@@ -400,8 +403,9 @@
         </div>
         <div class="preview-info">
           <div class="preview-num" id="preview-num"></div>
+          <span class="wizard-link" id="watch-wizard"><img class="wizard-logo" src="assets/g406431.png" alt="Watch Wizard"></span>
           <div class="preview-name" id="preview-name">Tonight's Lineup</div>
-          <div class="preview-desc" id="preview-desc">Hover a channel to tune in.</div>
+          <div class="preview-desc" id="preview-desc">Hover over a channel to preview</div>
         </div>
       </div>
 
@@ -610,7 +614,7 @@ function resetPreview() {
   preview.classList.remove('on', 'preview--horror');
   previewNum.textContent = '';
   previewName.textContent = "Tonight's Lineup";
-  previewDesc.textContent = 'Hover a channel to tune in.';
+  previewDesc.textContent = 'Hover over a channel to preview';
 }
 document.getElementById('guide-channels').addEventListener('mouseleave', resetPreview);
 
