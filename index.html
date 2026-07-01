@@ -104,14 +104,14 @@
     filter: drop-shadow(0 0 14px rgba(159, 107, 160, 0.7));
   }
   .wizard-logo {
-    display: block; height: clamp(2.2rem, 6vw, 3.4rem); width: auto;
+    display: block; height: clamp(4.4rem, 12vw, 6.8rem); width: auto;
   }
 
   /* hidden easter-egg gif — pops up centered, plays once, then disappears */
   #wizard-egg {
     position: fixed; inset: 0; z-index: 250; margin: auto;
     max-width: 70vw; max-height: 70vh; width: auto; height: auto;
-    object-fit: contain; pointer-events: none; display: none;
+    object-fit: contain; pointer-events: auto; cursor: pointer; display: none;
     filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.85));
     animation: eggPop 0.4s ease;
   }
@@ -679,25 +679,39 @@ attachChannel(document.getElementById('card-television'), televisionAudio);
 
 /* =====================================================
    EASTER EGG — click "Watch Wizard" to summon the book gif,
-   which plays through once (~11.3s) and then vanishes.
+   which plays for ~5.7s (or until the user clicks away) and
+   then vanishes.
    ===================================================== */
 (function() {
   var EGG_SRC = 'assets/placidplace-book-23041.gif';
-  var EGG_PLAY_MS = 11400; // one full loop of the gif, then hide
+  var EGG_PLAY_MS = 5700; // half of one full loop of the gif, then hide
   var egg = document.getElementById('wizard-egg');
   var wizard = document.getElementById('watch-wizard');
   var eggTimer = null;
 
-  wizard.addEventListener('click', function() {
+  function closeEgg() {
+    clearTimeout(eggTimer);
+    egg.classList.remove('show');
+    egg.src = ''; // stop the gif so it isn't looping while hidden
+  }
+
+  wizard.addEventListener('click', function(e) {
+    e.stopPropagation();
     // Reload the gif from frame 0 each click (cache-bust) so it always
     // plays a fresh single run even on a rapid re-click.
-    clearTimeout(eggTimer);
     egg.src = EGG_SRC + '?t=' + Date.now();
     egg.classList.add('show');
-    eggTimer = setTimeout(function() {
-      egg.classList.remove('show');
-      egg.src = ''; // stop the gif so it isn't looping while hidden
-    }, EGG_PLAY_MS);
+    clearTimeout(eggTimer);
+    eggTimer = setTimeout(closeEgg, EGG_PLAY_MS);
+  });
+
+  // Clicking the gif itself or anywhere else closes it early.
+  egg.addEventListener('click', function(e) {
+    e.stopPropagation();
+    closeEgg();
+  });
+  document.addEventListener('click', function() {
+    if (egg.classList.contains('show')) closeEgg();
   });
 })();
 
