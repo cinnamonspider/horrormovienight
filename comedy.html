@@ -3,56 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comedy Night</title>
+<title>Comedy</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cm-orange: #CC5803;
+    --cm-cream: #DAD2BC;
+    --cm-navy: #19323C;
+    --cm-maroon: #510D0A;
+    --cm-red: #F02D3A;
+  }
+
   body {
     font-family: 'Crimson Text', Georgia, serif;
-    background: #000001;
-    color: #F0F2F5;
+    background: var(--cm-navy);
+    color: var(--cm-cream);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
+    overflow-x: hidden;
   }
-  h1 {
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* SELECTION SCREEN */
+  #screen-select {
+    background: var(--cm-navy);
+    align-items: center; justify-content: center;
+    text-align: center; position: relative;
+  }
+  .select-inner {
+    max-width: 560px; width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem; position: relative; z-index: 2;
+  }
+  .eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.75rem;
+    letter-spacing: 0.25em; color: var(--cm-orange);
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .select-title {
     font-family: 'Cinzel', serif;
-    font-size: clamp(1.8rem, 5vw, 3rem);
-    font-weight: 900;
-    color: #D1BFAC;
-    margin-bottom: 1rem;
-    letter-spacing: 0.05em;
+    font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900;
+    color: var(--cm-red); line-height: 1.1; margin-bottom: 0.5rem;
+    text-shadow: 0 0 40px rgba(240, 45, 58, 0.25);
   }
-  p {
-    font-size: 1.1rem;
-    color: rgba(240, 242, 245, 0.45);
-    font-style: italic;
-    margin-bottom: 2rem;
+  .select-subtitle {
+    font-size: 1.15rem; color: var(--cm-cream);
+    font-style: italic; margin-bottom: 2rem;
   }
-  a {
-    font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(209, 191, 172, 0.5);
-    text-decoration: none;
-    border: 1px solid rgba(209, 191, 172, 0.2);
-    padding: 0.6rem 1.5rem;
-    border-radius: 2px;
-    transition: color 0.2s, border-color 0.2s;
+  .theme-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; width: 100%; margin-bottom: 2rem; }
+  .theme-card {
+    background: rgba(81, 13, 10, 0.35);
+    border: 1px solid rgba(204, 88, 3, 0.4); border-radius: 4px;
+    padding: 1.5rem 1.75rem; cursor: pointer; text-align: left;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex; align-items: center; gap: 1.25rem;
+    position: relative; overflow: hidden;
+    text-decoration: none; color: inherit;
   }
-  a:hover { color: #D1BFAC; border-color: rgba(209, 191, 172, 0.5); }
+  .theme-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--cm-red); opacity: 0; transition: opacity 0.2s;
+  }
+  .theme-card:hover { background: rgba(81, 13, 10, 0.55); border-color: rgba(240, 45, 58, 0.7); }
+  .theme-card:hover::before { opacity: 1; }
+  .theme-name { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--cm-orange); margin-bottom: 0.2rem; }
+  .theme-desc { font-size: 0.9rem; color: var(--cm-cream); font-style: italic; opacity: 0.75; }
+  .theme-arrow { margin-left: auto; color: var(--cm-red); font-size: 1.25rem; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+  .theme-card:hover .theme-arrow { opacity: 1; }
+  .divider { border: none; border-top: 1px solid rgba(218, 210, 188, 0.15); margin: 2rem 0; width: 100%; }
+  .footer-note { font-size: 0.8rem; color: rgba(218, 210, 188, 0.4); font-style: italic; }
 </style>
 <link rel="stylesheet" href="tv-skin.css">
 <script src="tv-skin.js"></script>
 </head>
 <body>
-  <h1>Comedy Night</h1>
-  <p>Coming soon. Check back later.</p>
-  <a href="index.html?menu">← Back to main menu</a>
+
+<div id="screen-select" class="screen active">
+  <div class="select-inner">
+    <p class="eyebrow">Choose your funny</p>
+    <h1 class="select-title">Comedy</h1>
+    <p class="select-subtitle">Side splitting fun.</p>
+    <div class="theme-grid">
+      <a class="theme-card" href="darklyfunny.html" id="card-darklyfunny">
+        <div>
+          <div class="theme-name">Darkly Funny</div>
+          <div class="theme-desc">When you like your comedies like your coffee. And also, you like black coffee.</div>
+        </div>
+        <span class="theme-arrow">→</span>
+      </a>
+    </div>
+    <hr class="divider">
+    <p class="footer-note">A movie will be chosen for you. Resistance is futile.</p>
+    <p style="margin-top:1.5rem;"><a href="index.html?menu" style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(218,210,188,0.35);text-decoration:none;" onmouseover="this.style.color='rgba(218,210,188,0.7)'" onmouseout="this.style.color='rgba(218,210,188,0.35)'">← Main Menu</a></p>
+  </div>
+</div>
+
 </body>
 </html>
